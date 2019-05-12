@@ -1,0 +1,10 @@
+# project
+.bundle
+.sass-cache
+Gemfile.lock
+_site
+*.gem
+
+# general
+.DS_Store
+.vscode
