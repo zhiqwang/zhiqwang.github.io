@@ -1,5 +1,5 @@
 title: Zhiqiang Wang
-author: zhiqwang
+author: Zhiqiang Wang
 address: Beijing, China
 email: zhiqwang@outlook.com
 
@@ -28,7 +28,7 @@ google_analytics: UA-138093514-1
 # If you want to link only specific pages in your header, uncomment
 # this and add the path to the pages in order as they should show up
 header_pages:
-  - about
+  - about.md
 
 markdown: kramdown
 kramdown:
