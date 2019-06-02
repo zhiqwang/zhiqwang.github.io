@@ -6,7 +6,7 @@
   @extend %vertical-rhythm;
 
   .highlighter-rouge & {
-    background: #eef;
+    background: #f2f2f2;
   }
 
   .c     { color: #998; font-style: italic } // Comment
@@ -68,4 +68,40 @@
   .vg    { color: #008080 } // Name.Variable.Global
   .vi    { color: #008080 } // Name.Variable.Instance
   .il    { color: #099 } // Literal.Number.Integer.Long
+}
+
+.highlight table {
+  margin-bottom: 0;
+  border: 0;
+
+  pre {
+    margin: 0;
+    border: 0;
+  }
+
+  td {
+    padding: 0;
+    border: 0;
+    width: calc(100% - 1em);
+
+    /* line numbers*/
+    &.gutter,
+    &.rouge-gutter {
+      text-align: right;
+      color: #aaa;
+      border-right: 1px solid #d9d9d9;
+    }
+
+    /* code */
+    &.code,
+    &.rouge-code {
+      margin-left: -1px;
+    }
+  }
+}
+
+.gist {
+  th, td {
+    border-bottom: 0;
+  }
 }
