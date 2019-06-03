@@ -1,3 +1,3 @@
 ---
-layout: about
+layout: home
 ---
