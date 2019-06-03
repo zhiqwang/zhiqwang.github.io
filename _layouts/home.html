@@ -6,25 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=500">
     {%- seo -%}
-    <link rel="stylesheet/scss" type="text/css" href="{{ "/assets/css/home.scss" | relative_url }}">
-    <script src="//cdnjs.cloudflare.com/ajax/libs/sass.js/0.6.3/sass.min.js"></script>
-    <script>
-      (async () => {
-        const compiled = (await Promise.all(
-          [...document.querySelectorAll("link")]
-            .filter(l => l.rel === 'stylesheet/scss')
-            .map(async l => {
-              url = l.href;
-              const code = await (await fetch(url)).text();
-              const basename = url.substring(url.lastIndexOf("/")+1);
-              Sass.writeFile(basename, code);
-              return Sass.compile(`@import "${basename}"; `);
-            })
-        )).join("\n");
-        document.head.innerHTML += `<style>${compiled}</style>`;
-        console.log(compiled);
-      })();
-    </script>
+    <link rel="stylesheet" href="{{ "/assets/css/site.css" | relative_url }}">
     {%- feed_meta -%}
     <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
     {%- include mathjax.html -%}
@@ -70,11 +52,13 @@
                   <heading>{{ page.list_title | default: "Posts" }}</heading>
                   <ul>
                     {%- for post in site.posts -%}
-                    <li>
-                      {%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
-                      <span class="post-meta">{{ post.date | date: date_format }}</span>
-                      <a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>
-                    </li>
+                    <span class="post-meta">
+                      <li>
+                        {%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
+                        {{ post.date | date: date_format }} –
+                        <a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>
+                      </li>
+                    </span>
                     {%- endfor -%}
                   </ul>
                 {%- endif -%}
@@ -106,7 +90,7 @@
             <tr>
               <!-- <td width="25%"><img src="images/cvf.jpg"></td> -->
               <td width="100%" valign="center">
-                <a href="https://github.com/zhiqwang/fairseq">In Construction</a> ...
+                <a href="https://github.com/zhiqwang/image-captioning">Under Construction</a> ...
               </td>
             </tr>
           </table>

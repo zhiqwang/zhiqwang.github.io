@@ -1,3 +1,9 @@
+---
+# start the file with two lines of triple dashes
+---
+
+$base-font-family: -apple-system, 'Lato', Verdana, Helvetica, sans-serif !default;
+
 a {
   color: #1772d0;
   text-decoration: none;
@@ -8,23 +14,23 @@ a {
 }
 
 body, td, th, tr, p, a, strong {
-  font-family: 'Lato', Verdana, Helvetica, sans-serif;
+  font-family: $base-font-family;
   font-size: 14px;
 }
 
 heading {
-  font-family: 'Lato', Verdana, Helvetica, sans-serif;
+  font-family: $base-font-family;
   font-size: 22px;
 }
 
 papertitle {
-  font-family: 'Lato', Verdana, Helvetica, sans-serif;
+  font-family: $base-font-family;
   font-size: 14px;
   font-weight: bold;
 }
 
 name {
-  font-family: 'Lato', Verdana, Helvetica, sans-serif;
+  font-family: $base-font-family;
   font-size: 32px;
 }
 
@@ -61,7 +67,7 @@ span.highlight {
 
 .post-content {
   @include headings {
-    font-family: 'Lato', Verdana, Helvetica, sans-serif;
+    font-family: $base-font-family;
     font-size: 22px;
     font-weight: normal;
   }
