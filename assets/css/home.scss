@@ -1,21 +1,13 @@
 a {
   color: #1772d0;
   text-decoration: none;
+  &:focus, &:hover {
+    color: #f09228;
+    text-decoration: none;
+  }
 }
 
-a:focus,
-a:hover {
-  color: #f09228;
-  text-decoration: none;
-}
-
-body, td, th, tr, p,
-a {
-  font-family: 'Lato', Verdana, Helvetica, sans-serif;
-  font-size: 14px
-}
-
-strong {
+body, td, th, tr, p, a, strong {
   font-family: 'Lato', Verdana, Helvetica, sans-serif;
   font-size: 14px;
 }
@@ -28,7 +20,7 @@ heading {
 papertitle {
   font-family: 'Lato', Verdana, Helvetica, sans-serif;
   font-size: 14px;
-  font-weight: 700
+  font-weight: 700;
 }
 
 name {

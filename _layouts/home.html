@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-{%- assign social = site.minima.social_links -%}
 
 <html>
   <head>
@@ -7,7 +6,25 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=500">
     {%- seo -%}
-    <link href="{{ "/assets/css/about.css" | relative_url }}" rel="stylesheet" type="text/css">
+    <link rel="stylesheet/scss" type="text/css" href="{{ "/assets/css/home.scss" | relative_url }}">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/sass.js/0.6.3/sass.min.js"></script>
+    <script>
+      (async () => {
+        const compiled = (await Promise.all(
+          [...document.querySelectorAll("link")]
+            .filter(l => l.rel === 'stylesheet/scss')
+            .map(async l => {
+              url = l.href;
+              const code = await (await fetch(url)).text();
+              const basename = url.substring(url.lastIndexOf("/")+1);
+              Sass.writeFile(basename, code);
+              return Sass.compile(`@import "${basename}"; `);
+            })
+        )).join("\n");
+        document.head.innerHTML += `<style>${compiled}</style>`;
+        console.log(compiled);
+      })();
+    </script>
     {%- feed_meta -%}
     <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
     {%- include mathjax.html -%}
@@ -17,6 +34,8 @@
   </head>
 
   <body>
+    {%- assign social = site.minima.social_links -%}
+
     <table width="800" border="0" align="center" cellspacing="0" cellpadding="0">
       <tr>
         <td>
@@ -110,11 +129,7 @@
           <table width="100%" align="center" border="0" cellspacing="0" cellpadding="20">
             <tr>
               <td>
-                <main class="page-content" aria-label="Content">
-                  <div class="wrapper">
-                    {{ content }}
-                  </div>
-                </main>
+                {{ content }}
               </td>
             </tr>
           </table>
