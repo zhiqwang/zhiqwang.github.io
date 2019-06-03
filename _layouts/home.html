@@ -54,8 +54,7 @@
                   <a href="mailto:{{ site.email }}">Email</a> &nbsp/&nbsp
                   <a href="{{ "/assets/data/Zhiqiang-CV.pdf" | relative_url }}">CV</a> &nbsp/&nbsp
                   <a href="https://github.com/{{ social.github | cgi_escape | escape }}">GitHub</a> &nbsp/&nbsp
-                  <a href="https://www.linkedin.com/in/{{ social.linkedin | cgi_escape | escape }}"> LinkedIn </a> &nbsp/&nbsp
-                  <a href="{{ "/blog" | relative_url }}"> Blog </a>
+                  <a href="https://www.linkedin.com/in/{{ social.linkedin | cgi_escape | escape }}"> LinkedIn </a>
                 </p>
               </td>
               <td width="33%">
@@ -66,11 +65,56 @@
 
           <table width="100%" align="center" border="0" cellspacing="0" cellpadding="20">
             <tr>
-              <td width="100%" valign="middle">
-                <heading>Research</heading>
+              <td>
+                {%- if site.posts.size > 0 -%}
+                  <heading>{{ page.list_title | default: "Posts" }}</heading>
+                  <ul>
+                    {%- for post in site.posts -%}
+                    <li>
+                      {%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
+                      <span class="post-meta">{{ post.date | date: date_format }}</span>
+                      <a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>
+                    </li>
+                    {%- endfor -%}
+                  </ul>
+                {%- endif -%}
+              </td>
+            </tr>
+          </table>
+
+          <table width="100%" align="center" border="0" cellspacing="0" cellpadding="20">
+            <tr>
+              <td>
+                <div class="post-content">
+                  {{ content }}
+                </div>
+              </td>
+            </tr>
+          </table>
+
+          <table width="100%" align="center" border="0" cellspacing="0" cellpadding="20">
+            <tr>
+              <td>
+                <heading>Projects</heading>
                 <p>
                   I'm interested in computer vision, neural language processing, optimization and image processing.
                 </p>
+              </td>
+            </tr>
+          </table>
+          <table width="100%" align="center" border="0" cellpadding="20">
+            <tr>
+              <!-- <td width="25%"><img src="images/cvf.jpg"></td> -->
+              <td width="100%" valign="center">
+                <a href="https://github.com/zhiqwang/fairseq">In Construction</a> ...
+              </td>
+            </tr>
+          </table>
+
+          <table width="100%" align="center" border="0" cellspacing="0" cellpadding="20">
+            <tr>
+              <td width="100%" valign="middle">
+                <heading>Research</heading>
               </td>
             </tr>
           </table>
@@ -109,33 +153,7 @@
               </td>
             </tr>
           </table>
-
-          <table width="100%" align="center" border="0" cellspacing="0" cellpadding="20">
-            <tr>
-              <td>
-                <heading>Projects</heading>
-              </td>
-            </tr>
-          </table>
-          <table width="100%" align="center" border="0" cellpadding="20">
-            <tr>
-              <!-- <td width="25%"><img src="images/cvf.jpg"></td> -->
-              <td width="100%" valign="center">
-                <a href="https://github.com/zhiqwang/fairseq">In Construction</a> ...
-              </td>
-            </tr>
-          </table>
-
-          <table width="100%" align="center" border="0" cellspacing="0" cellpadding="20">
-            <tr>
-              <td>
-                <div class="post-content">
-                 {{ content }}
-                </div>
-              </td>
-            </tr>
-          </table>
-
+  
           <table width="100%" align="center" border="0" cellspacing="0" cellpadding="20">
             <tr>
               <td>
