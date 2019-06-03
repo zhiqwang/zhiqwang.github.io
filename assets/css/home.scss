@@ -20,7 +20,7 @@ heading {
 papertitle {
   font-family: 'Lato', Verdana, Helvetica, sans-serif;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: bold;
 }
 
 name {
@@ -51,4 +51,18 @@ name {
 
 span.highlight {
   background-color: #ffffd0;
+}
+
+@mixin headings {
+  h1, h2, h3, h4, h5, h6 {
+    @content;
+  }
+}
+
+.post-content {
+  @include headings {
+    font-family: 'Lato', Verdana, Helvetica, sans-serif;
+    font-size: 22px;
+    font-weight: normal;
+  }
 }
