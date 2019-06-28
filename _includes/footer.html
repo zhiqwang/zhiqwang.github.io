@@ -10,8 +10,6 @@
           <li class="p-name">
             {%- if site.address -%}
               {{ site.address | escape }}
-            {%- else -%}
-              {{ site.author | escape }}
             {%- endif -%}
             </li>
             {%- if site.email -%}
