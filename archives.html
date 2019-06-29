@@ -1,0 +1,25 @@
+---
+layout: page
+title: Archives
+permalink: /blog/
+---
+
+<section class="archive-post-list">
+  <h2 class="post-list-heading">{{ "Posts by Year" }}</h2>
+
+  {% for post in site.posts %}
+    {% assign current_date = post.date | date: "%Y" %}
+    {% if current_date != my_date %}
+      {% unless forloop.first %}</ul>{% endunless %}
+      <h3>{{ current_date }}</h3>
+      <ul>
+      {% assign my_date = current_date %}
+    {% endif %}
+    <li>
+      <a href="{{ post.url }}"><span>{{ post.date | date: "%b %-d" }}</span>, {{ post.title }}</a>
+    </li>
+    {% if forloop.last %}</ul>{% endif %}
+  {% endfor %}
+
+  <h2 class="post-list-heading">{{ "Posts by Tag" }}</h2>
+</section>

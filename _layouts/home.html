@@ -36,11 +36,22 @@
                   <a href="mailto:{{ site.email }}">Email</a> &nbsp/&nbsp
                   <a href="{{ "/assets/data/Zhiqiang-CV.pdf" | relative_url }}">CV</a> &nbsp/&nbsp
                   <a href="https://github.com/{{ social.github | cgi_escape | escape }}">GitHub</a> &nbsp/&nbsp
-                  <a href="https://www.linkedin.com/in/{{ social.linkedin | cgi_escape | escape }}"> LinkedIn </a>
+                  <a href="https://www.linkedin.com/in/{{ social.linkedin | cgi_escape | escape }}"> LinkedIn </a> &nbsp/&nbsp
+                  <a href="{{ "/blog/" | relative_url }}">Blog</a>
                 </p>
               </td>
               <td width="33%">
                 <img class="profile-picture" src="{{ "/assets/images/Zhiqiang.png" | relative_url }}">
+              </td>
+            </tr>
+          </table>
+
+          <table width="100%" align="center" border="0" cellspacing="0" cellpadding="20">
+            <tr>
+              <td>
+                <div class="post-content">
+                  {{ content }}
+                </div>
               </td>
             </tr>
           </table>
@@ -62,16 +73,6 @@
                     {%- endfor -%}
                   </ul>
                 {%- endif -%}
-              </td>
-            </tr>
-          </table>
-
-          <table width="100%" align="center" border="0" cellspacing="0" cellpadding="20">
-            <tr>
-              <td>
-                <div class="post-content">
-                  {{ content }}
-                </div>
               </td>
             </tr>
           </table>
