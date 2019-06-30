@@ -2,11 +2,20 @@
  * Reset some basic elements
  */
 body, h1, h2, h3, h4, h5, h6,
-p, blockquote, pre, hr,
+p, blockquote, pre,
 dl, dd, ol, ul, figure {
   margin: 0;
   padding: 0;
 
+}
+
+hr {
+  display: block;
+  height: 1px;
+  border: 0;
+  border-top: 1px solid $crimson-color-very-light;
+  margin: 2em 0;
+  padding: 0; 
 }
 
 
@@ -108,11 +117,11 @@ a {
   text-decoration: none;
 
   &:visited {
-    color: darken($brand-color, 15%);
+    color: $brand-color;
   }
 
   &:hover {
-    color: $text-color;
+    color: $crimson-color-light;
     text-decoration: underline;
   }
 

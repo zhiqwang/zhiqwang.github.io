@@ -1,25 +1,34 @@
 ---
 layout: page
 title: Archives
-permalink: /blog/
+permalink: /archives/
 ---
 
-<section class="archive-post-list">
-  <h2 class="post-list-heading">{{ "Posts by Year" }}</h2>
+<div class="home other-pages">
+  <h2 class="post-list-heading">Blog posts by Year</h2>
 
-  {% for post in site.posts %}
-    {% assign current_date = post.date | date: "%Y" %}
-    {% if current_date != my_date %}
-      {% unless forloop.first %}</ul>{% endunless %}
-      <h3>{{ current_date }}</h3>
-      <ul>
-      {% assign my_date = current_date %}
-    {% endif %}
-    <li>
-      <a href="{{ post.url }}"><span>{{ post.date | date: "%b %-d" }}</span>, {{ post.title }}</a>
-    </li>
-    {% if forloop.last %}</ul>{% endif %}
-  {% endfor %}
+    {% assign years = site.posts | group_by_exp: "post", "post.date | date: '%Y'" %}
+    {% for year in years %}
+      <span class="post-meta">
+        <a class="post-tag" href="{{ year.name | relative_url }}"><nobr>{{ year.name }} ({{ year.size }})</nobr></a>
+      </span>
+    {% endfor %}
 
-  <h2 class="post-list-heading">{{ "Posts by Tag" }}</h2>
-</section>
+  <br><br>
+
+  <h2 class="post-list-heading">Blog posts by Tag</h2>
+    {% capture temp_tags %}
+      {% for tag in site.tags %}
+        {{ tag[1].size | plus: 1000 }}#{{ tag[0] }}#{{ tag[1].size }}
+      {% endfor %}
+    {% endcapture %}
+    {% assign sorted_temp_tags = temp_tags | split:' ' | sort %}
+    {% for temp_tag in sorted_temp_tags %}
+      {% assign tag_items = temp_tag | split: '#' %}
+      <span class="post-meta">
+        <a class="post-tag" href="/tag/{{ tag_items[1] }}"><nobr>{{ tag_items[1]}} ({{ tag_items[2] }})</nobr></a>
+      </span>
+      <br>
+    {% endfor %}
+
+</div>

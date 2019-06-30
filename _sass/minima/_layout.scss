@@ -200,7 +200,7 @@
 }
 
 .post-list-heading {
-  @include relative-font-size(1.75);
+  @include relative-font-size(1.5);
 }
 
 .post-list {
@@ -215,11 +215,35 @@
 .post-meta {
   font-size: $small-font-size;
   color: $grey-color;
+
+  a.post-tag {
+    border-radius: 5px;
+    border: 1px solid $grey-color;
+    color: $grey-color;
+    padding: 1px 5px;
+    margin-left: 5px;
+    &:hover {
+      border: 1px solid $brand-color;
+      text-decoration: none;
+      color: #ffffff;
+      background: $brand-color;
+    }
+  }
 }
 
 .post-link {
   display: block;
   @include relative-font-size(1.5);
+}
+
+
+
+/**
+ * FAQ
+ */
+
+.other-pages {
+  margin-top: $spacing-unit * 2;
 }
 
 
@@ -292,7 +316,7 @@
 /**
  * Grid helpers
  */
- @media screen and (min-width: $on-large) {
+@media screen and (min-width: $on-large) {
   .one-half {
     width: -webkit-calc(50% - (#{$spacing-unit} / 2));
     width:         calc(50% - (#{$spacing-unit} / 2));

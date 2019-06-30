@@ -53,6 +53,7 @@ jekyll-archives:
   enabled:
     - categories
     - tags
+    - year
   layout: archive
   permalinks:
     year: '/:year/'
