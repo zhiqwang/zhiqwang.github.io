@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Interpretation of matrix calculus with Fréchet derivative
-tags: [Fréchet-derivative, matrix-calculus]
+tags: [fréchet-derivative, matrix-calculus]
 date: 2018-03-31 20:00:00 +0800
 ---
 

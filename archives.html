@@ -5,7 +5,7 @@ permalink: /archives/
 ---
 
 <div class="home other-pages">
-  <h2 class="post-list-heading">Blog posts by Year</h2>
+  <h2 class="page-heading">Browse by Year</h2>
 
     {% assign years = site.posts | group_by_exp: "post", "post.date | date: '%Y'" %}
     {% for year in years %}
@@ -16,7 +16,7 @@ permalink: /archives/
 
   <br><br>
 
-  <h2 class="post-list-heading">Blog posts by Tag</h2>
+  <h2 class="page-heading">Browse by Tag</h2>
     {% capture temp_tags %}
       {% for tag in site.tags %}
         {{ tag[1].size | plus: 1000 }}#{{ tag[0] }}#{{ tag[1].size }}
