@@ -250,6 +250,45 @@
   margin-top: $spacing-unit * 2;
 }
 
+.one {
+  width: 165px;
+  height: 165px;
+  position: relative;
+}
+
+.two {
+  width: 165px;
+  height: 165px;
+  position: absolute;
+  transition: opacity .2s ease-in-out;
+  -moz-transition: opacity .2s ease-in-out;
+  -webkit-transition: opacity .2s ease-in-out;
+}
+
+.fade {
+  transition: opacity .2s ease-in-out;
+  -moz-transition: opacity .2s ease-in-out;
+  -webkit-transition: opacity .2s ease-in-out;
+}
+
+.profile-picture {
+  height: 165px;
+  width: 165px;
+  position: relative;
+  margin: 30px 0 0 15px;
+  float: right;
+  border-radius: 50%;
+  p & {
+      padding: 0;
+      margin: 0;
+  }
+  @media (max-width: 500px) {
+      img {
+          margin-top: -5px;
+      }
+  }
+}
+
 
 
 /**

@@ -1,0 +1,43 @@
+<div id="reseach">
+  <table width="100%" border="0" align="center" cellspacing="0" cellpadding="0">
+    <tr>
+      <td>
+        <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+          <tr onmouseout="edgepreserved_stop()" onmouseover="edgepreserved_start()">
+            <td width="25%">
+              <div class="one">
+                <div class="two" id='edgepreserved_image'>
+                  <img src="{{ "/assets/images/edgepreserved_after.png" | relative_url }}">
+                </div>
+                <img src="{{ "/assets/images/edgepreserved_before.png" | relative_url }}">
+              </div>
+              <script type="text/javascript">
+                function edgepreserved_start() {
+                  document.getElementById('edgepreserved_image').style.opacity = "1";
+                }
+
+                function edgepreserved_stop() {
+                  document.getElementById('edgepreserved_image').style.opacity = "0";
+                }
+                edgepreserved_stop()
+              </script>
+            </td>
+            <td valign="middle" width="75%">
+              <papertitle>Image reconstruction method for the exterior problem with 1D edge-preserved diffusion and smoothing</papertitle>
+              <br>
+              Jinqiu Xu, <strong>Zhiqiang Wang</strong>, Yunsong Zhao, Peng Zhang
+              <br>
+              <em>Proceedings of the 5th International Conference on Image Formation in X-ray Computed Tomography (CT-Meeting)</em>, 2018
+              <br>
+              <a href="{{ "/assets/data/XuCTMeeting2018.bib" | relative_url }}">bibtex</a>
+              <br>
+              <p></p>
+              <p>The blurred edges are restored gradually by edge-preserving diffusion and edge-preserving smoothing.</p>
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</div>
