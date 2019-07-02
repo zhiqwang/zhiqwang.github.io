@@ -194,6 +194,18 @@
       background: $brand-color;
     }
   }
+
+  a.code-link {
+    color: $brand-color;
+    border-bottom: 1px dotted #bbb;
+    &:hover {
+      border-radius: 5px;
+      border: 1px solid $brand-color;
+      text-decoration: none;
+      color: #ffffff;
+      background: $brand-color;
+    }
+  }
 }
 
 .post-link {
