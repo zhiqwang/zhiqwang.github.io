@@ -13,7 +13,7 @@ hr {
   display: block;
   height: 1px;
   border: 0;
-  border-top: 1px solid $crimson-color-very-light;
+  border-top: 1px solid $teal-color-light;
   margin: 2em 0;
   padding: 0; 
 }
@@ -121,7 +121,7 @@ a {
   }
 
   &:hover {
-    color: $crimson-color-light;
+    color: $teal-color-light;
     text-decoration: underline;
   }
 

@@ -12,7 +12,7 @@
 .site-title {
   @include relative-font-size(1.625);
   font-weight: 600;
-  color: #ffffff; // $crimson-color;
+  color: #ffffff; // $teal-color;
   line-height: $base-line-height * $base-font-size * 2.25;
   letter-spacing: -1px;
   margin-bottom: 0;
@@ -20,11 +20,11 @@
 
   &,
   &:visited {
-    color: #ffffff; // $crimson-color-dark;
+    color: #ffffff; // $teal-color-dark;
   }
 
   &:hover {
-    color: $crimson-color-light;
+    color: $teal-color-light;
     text-decoration: none;
     cursor: pointer;
   }
@@ -54,7 +54,7 @@
     }
 
     &:hover {
-      color: $crimson-color-light;
+      color: $teal-color-light;
       text-decoration: none;
       cursor: pointer;
     }
@@ -214,7 +214,7 @@
   font-weight: 600;
 
   &:hover {
-    color: $crimson-color-light;
+    color: $teal-color-light;
     text-decoration: none;
     cursor: pointer;
   }
@@ -335,8 +335,8 @@
     padding-bottom: 1px;
 
     &:hover {
-      color: $crimson-color-light;
-      border-bottom: 1px solid $crimson-color-light;
+      color: $teal-color-light;
+      border-bottom: 1px solid $teal-color-light;
       padding-bottom: 1px;
       text-decoration: none;
     }
