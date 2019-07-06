@@ -4,7 +4,7 @@
 #site-header {
   @include relative-font-size(1.125);
   color: #333333;
-  margin-top: $spacing-unit * 2;
+  margin-top: $spacing-unit * 3;
   hr {
     border: 0;
     background-color: #f2f2f2;
@@ -67,6 +67,7 @@
 }
 
 .page-heading {
+  margin-top: $spacing-unit * 2;
   @include relative-font-size(1.375);
 }
 
@@ -125,21 +126,17 @@
 
 
 /**
- * FAQ
+ * Table
  */
-.other-pages {
-  margin-top: $spacing-unit * 2;
-}
-
 .one {
-  width: 165px;
-  height: 165px;
+  width: 160px;
+  height: 160px;
   position: relative;
 }
 
 .two {
-  width: 165px;
-  height: 165px;
+  width: 160px;
+  height: 160px;
   position: absolute;
   transition: opacity .2s ease-in-out;
   -moz-transition: opacity .2s ease-in-out;
@@ -153,20 +150,20 @@
 }
 
 .profile-picture {
-  height: 165px;
-  width: 165px;
+  height: 210px;
+  width: 210px;
   position: relative;
-  margin: 30px 0 0 15px;
+  margin: -75px 30px 0 0;
   float: right;
   border-radius: 50%;
   p & {
-      padding: 0;
-      margin: 0;
+    padding: 0;
+    margin: 0;
   }
   @media (max-width: 500px) {
-      img {
-          margin-top: -5px;
-      }
+    img {
+      margin-top: 5px;
+    }
   }
 }
 

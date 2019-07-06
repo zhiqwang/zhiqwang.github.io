@@ -4,7 +4,7 @@ title: Tags
 permalink: /tags/
 ---
 
-<div class="home other-pages">
+<div class="tags">
   <h2 class="page-heading">Browse by Year</h2>
 
     {% assign years = site.posts | group_by_exp: "post", "post.date | date: '%Y'" %}
@@ -13,8 +13,6 @@ permalink: /tags/
         <a class="post-tag" href="{{ year.name | relative_url }}"><nobr>{{ year.name }} ({{ year.size }})</nobr></a>
       </span>
     {% endfor %}
-
-  <br><br>
 
   <h2 class="page-heading">Browse by Tag</h2>
     {% capture temp_tags %}
