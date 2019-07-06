@@ -1,116 +1,19 @@
 /**
  * Site header
  */
-
-.site-header {
-  background: #222;
-  opacity: 0.8;
-  min-height: $spacing-unit * 1.865;
-  position: relative;
-}
-
-.site-title {
-  @include relative-font-size(1.625);
-  font-weight: 600;
-  color: white; // $teal-color;
-  line-height: $base-line-height * $base-font-size * 2.25;
-  letter-spacing: -1px;
-  margin-bottom: 0;
-  float: left;
-
-  &,
-  &:visited {
-    color: white; // $teal-color-dark;
+#site-header {
+  @include relative-font-size(1.125);
+  color: #333333;
+  margin-top: $spacing-unit * 2;
+  hr {
+    border: 0;
+    background-color: #f2f2f2;
+    margin-bottom: $spacing-unit / 2;
   }
-
-  &:hover {
-    color: $teal-color-light;
+  a {
+    padding-right: $spacing-unit / 2;
     text-decoration: none;
-    cursor: pointer;
-  }
-}
-
-.site-nav {
-  float: right;
-  text-align: right;
-  line-height: $base-line-height * $base-font-size * 2.25;
-  padding-right: 10px;
-
-  .nav-trigger {
-      display: none;
-  }
-
-  .menu-icon {
-    display: none;
-  }
-
-  .page-link {
-    color: white; // $text-color;
-    line-height: $base-line-height;
-
-    // Gaps between nav items, but not on the last one
-    &:not(:last-child) {
-      margin-right: 20px;
-    }
-
-    &:hover {
-      color: $teal-color-light;
-      text-decoration: none;
-      cursor: pointer;
-    }
-  }
-
-  @include media-query($on-palm) {
-    position: absolute;
-    top: 9px;
-    right: $spacing-unit / 2;
-    background-color: $background-color;
-    border: 1px solid $grey-color-light;
-    border-radius: 5px;
-    text-align: right;
-
-    label[for="nav-trigger"] {
-      display: block;
-      float: right;
-      width: 36px;
-      height: 36px;
-      z-index: 2;
-      cursor: pointer;
-    }
-
-    .menu-icon {
-      display: block;
-      float: right;
-      width: 36px;
-      height: 26px;
-      line-height: 0;
-      padding-top: 10px;
-      text-align: center;
-
-      > svg path {
-        fill: $grey-color-dark;
-      }
-    }
-
-    input ~ .trigger {
-      clear: both;
-      display: none;
-    }
-
-    input:checked ~ .trigger {
-      display: block;
-      padding-bottom: 5px;
-    }
-
-    .page-link {
-      display: block;
-      padding: 5px 10px;
-
-      &:not(:last-child) {
-        margin-right: 0;
-      }
-      margin-left: 20px;
-    }
+    color: #333333;
   }
 }
 
@@ -119,16 +22,16 @@
 /**
  * Site footer
  */
- .site-footer {
+.site-footer {
   right: 0;
   bottom: 0;
   left: 0;
-  padding: 1rem;
+  padding: $spacing-unit / 2;
   text-align: center;
   font-size: $small-font-size;
   color: $grey-color;
   clear: both;
-  margin-bottom: 30px;
+  margin-bottom: $spacing-unit;
 
   a {
     color: $grey-color;
@@ -164,8 +67,7 @@
 }
 
 .page-heading {
-  @include relative-font-size(1.5);
-  font-weight: 600;
+  @include relative-font-size(1.375);
 }
 
 .post-list {
@@ -225,7 +127,6 @@
 /**
  * FAQ
  */
-
 .other-pages {
   margin-top: $spacing-unit * 2;
 }
@@ -280,12 +181,12 @@
 }
 
 .post-title {
-  @include relative-font-size(2.2);
+  @include relative-font-size(2);
   letter-spacing: -1px;
   line-height: 1.2;
 
   @include media-query($on-laptop) {
-    @include relative-font-size(2.2);
+    @include relative-font-size(2);
   }
 
   font-weight: $base-font-weight * 1.5;
@@ -297,17 +198,17 @@
   margin-bottom: $spacing-unit;
 
   h2 {
-    @include relative-font-size(1.8);
+    @include relative-font-size(1.625);
 
     @include media-query($on-laptop) {
-      @include relative-font-size(1.75);
+      @include relative-font-size(1.5);
     }
 
     font-weight: $base-font-weight * 1.5;
     margin-top: $spacing-unit * 1.55;
 
     blockquote: {
-        line-height: 1.5;
+      line-height: 1.5;
     }
   }
 
@@ -322,7 +223,7 @@
   }
 
   h4 {
-    @include relative-font-size(1.15);
+    @include relative-font-size(1.125);
 
     @include media-query($on-laptop) {
       @include relative-font-size(1.125);

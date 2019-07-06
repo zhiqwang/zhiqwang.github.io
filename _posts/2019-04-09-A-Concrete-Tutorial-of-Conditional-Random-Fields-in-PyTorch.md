@@ -17,7 +17,7 @@ In this tutorial, we use the **conditional random fields (CRFs)** to model the n
 *Note:* this tutorial is based on Guthrie's[^1].
 
 
-### Mathematical overview of Conditional Random Fields
+## Mathematical overview of Conditional Random Fields
 
 **A brief note on notation:** Assume that we have some sequence length $m$, and some set of possible tags $\mathcal{Y}$. Let $\mathbf{y}$ be a tag sequence $y_1\ldots y_m$, and $\mathbf{x}$ an input sequence of words $x_1\ldots x_m$. For any tag sequence $y_1\ldots y_m$ where each $y_i\in\mathcal{Y}$, we define the *potential* for the sequence as[^2]
 
@@ -68,7 +68,7 @@ $$\begin{align}
 This has exactly the log-linear form of a CRF if we consider these log-probabilities to be the weights associated to transition and emission indicator features.[^3]
 
 
-### Model's Parameters
+## Model's Parameters
 
 Focus on **Bi-LSTM CRF**[^1] model, we define two kinds of potentials: *emission* and *transition*. The *emission* potential for the word at index $i$ comes from the hidden state of the `Bi-LSTM` at time-step $i$. The *transition* scores are stored in a $\textbf{P}$ parameters matrix with dimension $\vert\mathcal{Y}\vert\times\vert\mathcal{Y}\vert$. In my implementation, $\textbf{P}_{j,k}$ is the score of transitioning to tag $j$ from tag $k$. So,
 
@@ -86,7 +86,7 @@ $$\begin{equation*}
 \end{equation*}$$
 
 
-### Parameter Estimation
+## Parameter Estimation
 
 We need to find the $\textbf{P}$ parameters that best fit the training data, a given set of tagged sentences:
 
@@ -155,7 +155,7 @@ $$\begin{align*}
 \end{align*}$$
 
 
-### Computational Algorithms and Implementations
+## Computational Algorithms and Implementations
 
 The algorithms of computing partition function is concluded in the pseudocode in below.
 
@@ -206,7 +206,7 @@ def _forward_variables(self, feats):
 Now we have learnt the $\textbf{P}$ parameters of the CRFs.
 
 
-### Sequence Prediction
+## Sequence Prediction
 
 For an untagged sentence $\mathbf{x}$, we want to know the tag of $\mathbf{x}$ that maximum the probability $p\left(\mathbf{y}\mid\mathbf{x}\right)$. The decoding problem is then to find an entire sequence of tags such that the sum of the transition scores is maximized. We solve this problem using the **Viterbi algorithm:**
 
@@ -276,12 +276,12 @@ def _viterbi_decode(self, feats):
 ```
 
 
-### Conclusions
+## Conclusions
 
 You can refer to the [notebook](https://github.com/zhiqwang/crf.pytorch/blob/master/demo.ipynb) for more details in a real application.
 
 
-### References
+## References
 
   [^1]: [Guthrie's tutorial on CRFs.](https://pytorch.org/tutorials/beginner/nlp/advanced_tutorial.html)
   [^2]: [Collins's write up on CRFs.](http://www.cs.columbia.edu/~mcollins/crf.pdf)

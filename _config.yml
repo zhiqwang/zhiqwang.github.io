@@ -1,10 +1,10 @@
-title: Zhiq'Log
+title: Zhiqiang Wang
 author: Zhiqiang Wang
 address: Beijing, China
 email: zhiqwang@outlook.com
 
 # Short description of your site
-description: > # this means to ignore newlines until "show_exerpts:"
+description: > # this means to ignore newlines until "show_excerpts:"
   I wanna to discribe and solve question through mathematics and coding...
 show_excerpts: true # set to true to show excerpts on the homepage
 

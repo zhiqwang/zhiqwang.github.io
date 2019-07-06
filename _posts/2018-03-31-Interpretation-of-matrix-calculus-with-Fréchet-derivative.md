@@ -40,7 +40,7 @@ and then
 
 $$\frac{\partial y}{\partial x} = 2 A^\mathsf{T}(Ax - b).$$
 
-### References
+## References
 
   [^1]: [Xu's write up on Matrix derivative.](http://www.cs.cmu.edu/~minx/matrixcal.pdf)
   [^2]: [Wiki page of Matrix calculus.](https://en.wikipedia.org/wiki/Matrix_calculus)
