@@ -5,12 +5,12 @@ tags: [graphical-models, conditional-random-fields, iterative-method]
 date: 2019-04-09 17:27:00 +0800
 ---
 
-Solving an optimization problem with **iterative methodology** often have five ingredient:
-- **Modeling** The problem with a set of *unknowns* or *parameters* to predict a datum's label.
-- **Initialize** A prediction of the datum's output by some mechanism.
-- **Forward propagate** the datum through the computational graph to get its *projections* or *features*.
-- Compute the *residual* of the *projections* between the real label and its prediction by the **loss function**.
-- **Backward propagate** the *residual* to the previous *parameters*, in other words, update the *parameters*.
+> Solving an optimization problem with **iterative methodology** often have five ingredient:
+> - **Modeling** The problem with a set of *unknowns* or *parameters* to predict a datum's label.
+> - **Initialize** A prediction of the datum's output by some mechanism.
+> - **Forward propagate** the datum through the computational graph to get its *projections* or *features*.
+> - Compute the *residual* of the *projections* between the real label and its prediction by the **loss function**.
+> - **Backward propagate** the *residual* to the previous *parameters*, in other words, update the *parameters*.
 
 In this tutorial, we use the **conditional random fields (CRFs)** to model the named-entity recognition (NER) problem. The **parameters** in this CRF is the transition probability between the tags and emission features provided by a `Bi-LSTM` neural network. The **loss function** in CRFs is the negative logarithm of conditional probability $p\left(\mathbf{y}\mid\mathbf{x}\right)$. We **forward pass** the datum through the computational graph to obtain its features, compare with its labels to get the parameters' **residual**, all left is projecting the residual **backward**, here we use gradient descent method. With the help of [pytorch](https://pytorch.org)'s `autograd` packages, we only need to implement the calculation of loss function, then pytorch's computational graph mechanism help us automatic compute the gradient of the loss. Remark here, one of the difficulty in computing the loss function is the calculation of *partition function*, we'll give a detail instruction how partition function is calculated in the log-space.
 
