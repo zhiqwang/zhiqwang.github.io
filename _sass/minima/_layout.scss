@@ -1,7 +1,7 @@
 /**
  * Site header
  */
-#site-header {
+.site-header {
   @include relative-font-size(1.125);
   color: #333333;
   margin-top: $spacing-unit * 3;
@@ -14,6 +14,19 @@
     padding-right: $spacing-unit / 2;
     text-decoration: none;
     color: #333333;
+  }
+}
+
+.head-link {
+  float: left;
+  display: block;
+  color: #333333;
+  text-align: center;
+  padding: 0 16px;
+  text-decoration: none;
+  &:hover {
+    background: $grey-color;
+    color: $background-color;
   }
 }
 
@@ -39,6 +52,11 @@
   p {
     margin: 5px auto;
     width: 200px;
+  }
+  hr {
+    border: 0;
+    background-color: #f2f2f2;
+    margin-bottom: $spacing-unit;
   }
   img {
     width: 26px;
@@ -100,6 +118,8 @@
 
   a.code-link {
     color: $brand-color;
+    text-align: center;
+    padding: 0 auto;
     border-bottom: 1px dotted #bbb;
     &:hover {
       border-radius: 5px;
@@ -257,6 +277,11 @@
     }
     &:hover .svg-icon { fill: currentColor; }
   }
+}
+
+.social-list-right {
+  float:right;
+  margin: 0 5px
 }
 
 
