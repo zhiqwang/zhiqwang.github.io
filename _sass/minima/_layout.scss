@@ -2,9 +2,8 @@
  * Site header
  */
 .site-header {
-  @include relative-font-size(1.125);
   color: #333333;
-  margin-top: $spacing-unit * 3;
+  margin-top: $spacing-unit * 2;
   hr {
     border: 0;
     background-color: #f2f2f2;
