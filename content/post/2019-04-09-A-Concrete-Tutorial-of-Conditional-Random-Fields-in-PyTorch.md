@@ -14,7 +14,7 @@ Solving an optimization problem with **iterative methodology** often have five i
 
 In this tutorial, we use the **conditional random fields (CRFs)** to model the named-entity recognition (NER) problem. The **parameters** in this CRF is the transition probability between the tags and emission features provided by a `Bi-LSTM` neural network. The **loss function** in CRFs is the negative logarithm of conditional probability $p\left(\mathbf{y}\mid\mathbf{x}\right)$. We **forward pass** the datum through the computational graph to obtain its features, compare with its labels to get the parameters' **residual**, all left is projecting the residual **backward**, here we use gradient descent method. With the help of [pytorch](https://pytorch.org)'s `autograd` packages, we only need to implement the calculation of loss function, then pytorch's computational graph mechanism help us automatic compute the gradient of the loss. Remark here, one of the difficulty in computing the loss function is the calculation of *partition function*, we'll give a detail instruction how partition function is calculated in the log-space.
 
-*Note:* this tutorial is based on Guthrie's tutorial[^1].
+*Note:* this tutorial is based on Guthrie's tutorial^[[Guthrie's tutorial on CRFs.](https://pytorch.org/tutorials/beginner/nlp/advanced_tutorial.html)].
 
 
 ## Mathematical overview of Conditional Random Fields
@@ -70,7 +70,7 @@ This has exactly the log-linear form of a CRF if we consider these log-probabili
 
 ## Model's Parameters
 
-Focus on **Bi-LSTM CRF**[^1] model, we define two kinds of potentials: *emission* and *transition*. The *emission* potential for the word at index $i$ comes from the hidden state of the `Bi-LSTM` at time-step $i$. The *transition* scores are stored in a $\textbf{P}$ parameters matrix with dimension $\vert\mathcal{Y}\vert\times\vert\mathcal{Y}\vert$. In my implementation, $\textbf{P}_{j,k}$ is the score of transitioning to tag $j$ from tag $k$. So,
+Focus on **Bi-LSTM CRF** model, we define two kinds of potentials: *emission* and *transition*. The *emission* potential for the word at index $i$ comes from the hidden state of the `Bi-LSTM` at time-step $i$. The *transition* scores are stored in a $\textbf{P}$ parameters matrix with dimension $\vert\mathcal{Y}\vert\times\vert\mathcal{Y}\vert$. In my implementation, $\textbf{P}_{j,k}$ is the score of transitioning to tag $j$ from tag $k$. So,
 
 $$\begin{align}
     \text{Score}\left(\mathbf{y}\mid\mathbf{x}\right) &= \sum_i\left\{\log \psi_\text{EMIT}(x_i \mid y_i) + \log \psi_\text{TRANS}(y_i\mid y_{i-1})\right\},\label{eq:bi-lstm-crf}\\
@@ -279,5 +279,3 @@ def _viterbi_decode(self, feats):
 ## Conclusions
 
 You can refer to the [notebook](https://github.com/zhiqwang/crf.pytorch/blob/master/demo.ipynb) for more details in a real application.
-
-[^1]: [Guthrie's tutorial on CRFs.](https://pytorch.org/tutorials/beginner/nlp/advanced_tutorial.html)

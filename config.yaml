@@ -42,7 +42,7 @@ params:
     - "js/external-link.js"
     - "js/alt-title.js"
     - "js/header-link.js"
-  githubContentURL: "https://github.com/zhiqwang/zhiqwang.github.io/edit/master/content/"
+  githubContentURL: "https://github.com/zhiqwang/zhiqwang.github.io/edit/source/content/"
   twitterImage: "/images/Zhiqiang.png"
 
   # options for highlight.js (version, additional languages, and theme)

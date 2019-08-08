@@ -13,7 +13,7 @@ I did my Master’s degree in computational mathematics at the [Capital Normal U
 
 ### Projects
 
-- sightseq (Image captioning, work in process)
+- sightseq: Computer vision tools for fairseq, containing PyTorch implementation of text recognition and object detection (Work in process)
   <a href="https://github.com/zhiqwang/sightseq" style="border-bottom:none;padding-bottom:0px;">
     <img src="https://img.shields.io/github/stars/zhiqwang/sightseq.svg?color=teal&logo=github"alt="GitHub stars">
   </a>

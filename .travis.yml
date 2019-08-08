@@ -1,6 +1,11 @@
 language: r
+dist: xenial
 latex: false
-cache: packages
+
+cache:
+  packages: yes
+  directories:
+    - $HOME/bin
 
 branches:
   only:
@@ -14,6 +19,7 @@ before_script:
   - Rscript -e 'blogdown::install_hugo()'
 
 script:
+  - rm -rf public
   - Rscript -e 'blogdown::build_site()'
 
 deploy:
