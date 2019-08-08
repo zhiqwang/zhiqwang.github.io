@@ -1,9 +1,12 @@
 # project
-.bundle
-.sass-cache
-Gemfile.lock
-_site
-*.gem
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+public
+static/figures
+blogdown
+resources
 
 # general
 .DS_Store

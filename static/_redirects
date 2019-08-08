@@ -1,0 +1,3 @@
+/post/feed/     /post/index.xml
+/post/comments/feed/   https://zhiqwang.disqus.com/latest.rss
+/media/js/center-images.js   /js/center-img.js

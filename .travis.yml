@@ -1,23 +1,26 @@
-language: ruby
-sudo: false
-cache: bundler
-rvm:
-  - 2.6.3
-before_install:
-  - gem update --system
-  - gem install bundler
-script:
-  - rm -rf _site
-  - bundle exec jekyll build
+language: r
+latex: false
+cache: packages
+
 branches:
   only:
     - source
+
+r_github_packages:
+  - rstudio/blogdown
+
+
+before_script:
+  - Rscript -e 'blogdown::install_hugo()'
+
+script:
+  - Rscript -e 'blogdown::build_site()'
+
 deploy:
   provider: pages
-  skip-cleanup: true
-  github-token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
-  keep-history: true
-  local-dir: _site
-  target-branch: master
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN
   on:
     branch: source
+  local_dir: public
+  target_branch: master

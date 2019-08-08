@@ -1,0 +1,75 @@
+baseurl: "/"
+languageCode: "en-us"
+title: "Zhiqiang Wang | 王志强"
+theme: "hugo-ivy"
+googleAnalytics: "UA-138093514-1"
+disqusShortname: "zhiqwang"
+ignoreFiles: ["\\.Rmd$", "_files$", "_cache$"]
+hasCJKLanguage: true
+enableEmoji: true
+footnotereturnlinkcontents: "↩"
+rssLimit: 100
+
+permalinks:
+  post: "/post/:year/:month/:slug/"
+
+menu:
+  main:
+    - name: "Home"
+      url: "/"
+      weight: 1
+    - name: "Blog"
+      url: "/post/"
+      weight: 2
+    - name: "GitHub"
+      url: "https://github.com/zhiqwang"
+      weight: 3
+    - name: "Email"
+      url: "mailto:zhiqwang@outlook.com"
+      weight: 4
+
+params:
+  description: "I wanna to discribe and solve question through mathematics and coding ..."
+  footer: "Zhiqiang Wang &copy; 2018 - 2019"
+  disqusURL: "http://zhiqwang.github.io"
+  customJS:
+    - "js/fix-toc.js"
+    - "js/center-img.js"
+    - "js/right-quote.js"
+    - "js/no-highlight.js"
+    - "js/fix-footnote.js"
+    - "js/math-code.js"
+    - "js/external-link.js"
+    - "js/alt-title.js"
+    - "js/header-link.js"
+  githubContentURL: "https://github.com/zhiqwang/zhiqwang.github.io/edit/master/content/"
+  twitterImage: "/images/Zhiqiang.png"
+
+  # options for highlight.js (version, additional languages, and theme)
+  highlightjsVersion: "9.12.0"
+  highlightjsCDN: "//cdnjs.cloudflare.com/ajax/libs"
+  highlightjsLang: ["r", "yaml", "tex", "python"]
+  highlightjsTheme: "github"
+
+  logo:
+    en:
+      img: "/images/logo.png"
+      url: "/"
+      alt: "Zhiqiang Wang"
+      tag: ""
+
+  author:
+    post: "Zhiqiang Wang"
+
+
+  lang:
+    edit:
+      cn: "编辑"
+    license:
+      cn: "版权"
+    subscribe:
+      cn: "订阅"
+
+blackfriday:
+    extensionsmask: ["noIntraEmphasis"]
+    fractions: false
