@@ -9,7 +9,7 @@
 {{ range (where .Site.Pages "Type" .Section).ByParam (or .Params.order_by "date" ) }}
 {{ if len (findRE "/(demo|example)/$" .File.Dir) }}
 <p>
-  <span>{{ .Date.Format "2006-01-02" }}</span>
+  <span>{{ .Date.Format "Jan 2, 2006" }}</span>
   <a href="{{ .RelPermalink }}">{{ .Title }} {{ with .Params.subtitle }}<span class='subtitle'> &middot; {{ . }} </span>{{ end }}</a>
 </p>
 {{ end }}

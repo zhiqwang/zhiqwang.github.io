@@ -41,6 +41,9 @@ body {
 code {
   hyphens: none;
 }
+.post-meta {
+  color: #828282;
+}
 iframe, twitterwidget, video {
   max-width: 100%;
   display: block;
@@ -178,7 +181,7 @@ p .profile-picture {
   padding: 0;
   margin: 0;
 }
-@media (max-width: 500px) {
+@media (max-width: 961px) {
   .profile-picture img {
     margin-top: 5px;
  }

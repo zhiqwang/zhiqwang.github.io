@@ -27,6 +27,26 @@ menu:
     - name: "Email"
       url: "mailto:zhiqwang@outlook.com"
       weight: 4
+  post:
+    - name: "Home"
+      url: "/"
+      weight: 1
+    - name: "Blog"
+      url: "/post/"
+      weight: 2
+    - name: "Archives"
+      url: "/tags/"
+      weight: 3
+  tags:
+    - name: "Home"
+      url: "/"
+      weight: 1
+    - name: "Blog"
+      url: "/post/"
+      weight: 2
+    - name: "Archives"
+      url: "/tags/"
+      weight: 3
 
 params:
   description: "I wanna to discribe and solve question through mathematics and coding ..."
@@ -60,7 +80,6 @@ params:
 
   author:
     post: "Zhiqiang Wang"
-
 
   lang:
     edit:
