@@ -172,17 +172,10 @@ img[src$="#border"] {
 .profile-picture {
   height: 210px;
   width: 210px;
+  display: block;
   position: relative;
   margin: auto auto;
   float: right;
   border-radius: 50%;
 }
-p .profile-picture {
-  padding: 0;
-  margin: 0;
-}
-@media (max-width: 961px) {
-  .profile-picture img {
-    margin-top: 5px;
- }
-}
+

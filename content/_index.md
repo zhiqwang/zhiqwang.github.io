@@ -7,13 +7,19 @@ disable_highlight: true
 
 ### About Me
 <img class="profile-picture" src="/images/Zhiqiang.png">
-I'm Zhiqiang Wang, I'm working on computer vision and image processing, espacially on object detection and image captioning.
 
-I did my Master’s degree in computational mathematics at the [Capital Normal University](http://eng.cnu.edu.cn).
+My name is Zhiqiang Wang. I'm doing open-source work on [sightseq](https://github.com/zhiqwang/sightseq). My current focus is on deep learning and image processing. Now I am looking for a job opportunities in industry (Beijing as the first option). Please feel free to [contact me](#contact-me).
+
+Previously, I did my Master’s degree in computational mathematics at [Capital Normal University](http://eng.cnu.edu.cn) (Beijing, China) in 2017, where my research revolved around optimization, specifically compressed sensing and its application on computed tomography (CT).
+
+Prior to that, I did my B.Sc. degree in 2013 from [Ningbo University](https://www.nbu.edu.cn/en/) (Zhejiang, China). At that time, I wanted to be a mathematician :-) obviously, now I'm a little far away from this dreaming.
+
+### Contact Me
+Best way to contact me would be via [email](mailto:zhiqwang@outlook.com). You can also find me on [GitHub](https://github.com/zhiqwang) (where I’m active almost every day) or [Twitter](https://twitter.com/zhiq_w) (I read Twitter about three times a week).
 
 ### Projects
 
-- [sightseq](https://github.com/zhiqwang/sightseq): Computer vision tools for [fairseq](https://github.com/pytorch/fairseq), my current goal is to achieve the implementation of image captioning (Work in process)
+- [sightseq](https://github.com/zhiqwang/sightseq): PyTorch implementation of text recognition and object detection (work in process), my current goal is to achieve the implementation of image captioning, it can also be viewed as the computer vision tools for [fairseq](https://github.com/pytorch/fairseq), my ultimate goal is to build a general and modular framework for vision and language multimodal research.
 <a href="https://github.com/zhiqwang/sightseq" style="border-bottom:0px;padding-bottom:0px;">
   <img src="https://img.shields.io/github/stars/zhiqwang/sightseq.svg?color=teal&logo=github"alt="GitHub stars">
 </a>
