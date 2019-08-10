@@ -20,10 +20,10 @@ Best way to contact me would be via [email](mailto:zhiqwang@outlook.com). You ca
 ### Projects
 
 - [sightseq](https://github.com/zhiqwang/sightseq): PyTorch implementation of text recognition and object detection (work in process), my current goal is to achieve the implementation of image captioning, it can also be viewed as the computer vision tools for [fairseq](https://github.com/pytorch/fairseq), my ultimate goal is to build a general and modular framework for vision and language multimodal research.
-<a href="https://github.com/zhiqwang/sightseq" style="border-bottom:0px;padding-bottom:0px;">
+<a href="https://github.com/zhiqwang/sightseq" style="border-bottom:none;padding-bottom:none;transition:none;box-shadow:none;background:none">
   <img src="https://img.shields.io/github/stars/zhiqwang/sightseq.svg?color=teal&logo=github"alt="GitHub stars">
 </a>
-<a href="https://github.com/zhiqwang/sightseq/forks" style="border-bottom:0px;padding-bottom:0px;">
+<a href="https://github.com/zhiqwang/sightseq/forks" style="border-bottom:none;padding-bottom:none;transition:none;box-shadow:none;background:none">
   <img src="https://img.shields.io/github/forks/zhiqwang/sightseq.svg" alt="GitHub forks">
 </a>
 
@@ -48,7 +48,7 @@ Best way to contact me would be via [email](mailto:zhiqwang@outlook.com). You ca
           edgepreserved_stop()
         </script>
       </td>
-      <td style="padding:10px;width:75%;font-size:13px;vertical-align:middle">
+      <td style="padding:10px;width:75%;font-size:14px;vertical-align:middle">
         <b>Image reconstruction method for the exterior problem with 1D edge-preserved diffusion and smoothing</b>
         <br>
         Jinqiu Xu, <b>Zhiqiang Wang</b>, Yunsong Zhao, Peng Zhang

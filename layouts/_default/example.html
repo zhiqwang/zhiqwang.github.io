@@ -1,8 +1,10 @@
 {{ partial "header.html" . }}
 
-{{ if .Content }}
-{{ .Content }}
-{{ end }}
+<div class="article-content">
+  {{ if .Content }}
+  {{ .Content }}
+  {{ end }}
+</div>
 
 {{ if or (not .Content) .Params.list_pages }}
 <div class="archive">

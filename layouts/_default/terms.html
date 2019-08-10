@@ -1,0 +1,16 @@
+{{ partial "header.html" . }}
+
+<div class="article-content">
+  <ul class="terms">
+    {{ range $key, $value := .Data.Terms }}
+    <li>
+      <a href="{{ (print "/" $.Data.Plural "/" $key | urlize) | relURL }}">
+        {{ $key }}
+      </a>
+      ({{ len $value }})
+    </li>
+    {{ end }}
+  </ul>
+</div>
+
+{{ partial "footer.html" . }}

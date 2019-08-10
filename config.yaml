@@ -45,7 +45,7 @@ menu:
 params:
   description: "I wanna to discribe and solve question through mathematics and coding ..."
   footer: "Zhiqiang Wang &copy; 2018 - 2019"
-  disqusURL: "http://zhiqwang.github.io"
+  disqusURL: "https://zhiqwang.github.io"
   customJS:
     - "js/fix-toc.js"
     - "js/center-img.js"
