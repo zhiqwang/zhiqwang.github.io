@@ -28,5 +28,14 @@ document.addEventListener('keyup', function(e) {
 {{ end }}
 
 {{ if and (not .Params.disable_mathjax) (or (in (string .Content) "\\") (in (string .Content) "$")) }}
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    TeX: {
+      equationNumbers: {
+        autoNumber: "AMS",
+      }
+    }
+  });
+</script>
 <script async src="//mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 {{ end }}
