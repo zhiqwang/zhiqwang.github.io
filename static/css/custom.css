@@ -181,13 +181,3 @@ img[src$="#border"] {
     padding-left: 10px;
   }
 }
-
-.profile-picture {
-  height: 210px;
-  width: 210px;
-  display: block;
-  position: relative;
-  margin: auto auto;
-  float: right;
-  border-radius: 50%;
-}
