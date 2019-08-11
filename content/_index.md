@@ -7,16 +7,16 @@ disable_highlight: true
 
 <table style="width:100%;border:0px;border-spacing:0px;">
   <tr style="padding:0px;">
-    <td style="width:64%;padding:0px;">
+    <td style="width:64%;padding:0px;text-align:justify;text-justify:inter-ideograph;">
       <p>My name is Zhiqiang Wang. I'm doing open-source work on <a href="https://github.com/zhiqwang/sightseq">sightseq</a>. My current focus is on deep learning and image processing. Now I am looking for a job opportunities in industry (Beijing as the first option). Please feel free to <a href="#contact-me">contact me</a>.</p>
-      <p>Previously, I did my Master’s degree in computational mathematics at <a href="http://eng.cnu.edu.cn">Capital Normal University</a> (Beijing, China) in 2017, where my research revolved around optimization, specifically compressed sensing and its application on computed tomography (CT).</p>
+      <p>Previously, I received my Master’s degree in Computational Mathematics from <a href="http://eng.cnu.edu.cn">Capital Normal University</a> (Beijing, China) in 2017, where my research revolved around optimization, specifically compressed sensing and its application on computed tomography (CT).</p>
     </td>
     <td style="width:36%;padding:10px">
       <img style="border-radius:50%;" src="/images/Zhiqiang.png">
     </td>
   </tr>
 </table>
-Prior to that, I did my B.Sc. degree in mathematics in 2013 from [Ningbo University](https://www.nbu.edu.cn/en) (Zhejiang, China). At that time, I wanted to be a mathematician :-) obviously, now I'm a little far away from this dreaming.
+Prior to that, I did my undergraduate at [Ningbo University](https://www.nbu.edu.cn/en) (Zhejiang, China) in 2013, majoring in Mathematics. At that time, I wanted to be a mathematician :-) obviously, now I'm a little far away from this dreaming.
 
 ### Contact Me
 Best way to contact me would be via [email](mailto:zhiqwang@outlook.com). You can also find me on [GitHub](https://github.com/zhiqwang) (where I’m active almost every day) or [Twitter](https://twitter.com/zhiq_w) (I read Twitter about three times a week).
