@@ -57,7 +57,7 @@ Best way to contact me would be via [email](mailto:zhiqwang@outlook.com). You ca
         <br>
         Jinqiu Xu, <b>Zhiqiang Wang</b>, Yunsong Zhao, Peng Zhang
         <br>
-        <em>Proceedings of the 5th International Conference on Image Formation in X-ray Computed Tomography (CT-Meeting)</em> 2018
+        <em>The 5th International Conference on Image Formation in X-ray Computed Tomography (CT-Meeting)</em>, 2018 <b>(Oral Presentation)</b>
         <br><a href="/data/XuCTMeeting2018.bib">Bibtex</a>
         <br>The blurred edges are restored gradually by edge-preserving diffusion and edge-preserving smoothing.
       </td>
