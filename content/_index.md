@@ -19,7 +19,7 @@ disable_highlight: true
 Prior to that, I did my undergraduate at [Ningbo University](https://www.nbu.edu.cn/en) (Zhejiang, China) in 2013, majoring in Mathematics. At that time, I wanted to be a mathematician :-) obviously, now I'm a little far away from this dreaming.
 
 ### Contact Me
-Best way to contact me would be via [email](mailto:zhiqwang@outlook.com). You can also find me on [GitHub](https://github.com/zhiqwang) (where I’m active almost every day) or [Twitter](https://twitter.com/zhiq_w) (I read Twitter about three times a week).
+Best way to contact me would be via [email](mailto:me@zhiqwang.com). You can also find me on [GitHub](https://github.com/zhiqwang) (where I’m active almost every day) or [Twitter](https://twitter.com/zhiq_w) (I read Twitter about three times a week).
 
 ### Projects
 
