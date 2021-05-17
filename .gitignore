@@ -1,0 +1,8 @@
+.DS_Store
+assets/images/.DS_Store
+_jupyter/.DS_Store
+.ipynb_checkpoints
+__pycache__/
+_jupyter/data/
+_jupyter/.data/
+_jupyter/tagger/
