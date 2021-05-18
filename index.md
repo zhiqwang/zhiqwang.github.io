@@ -24,6 +24,6 @@ Thanks for stopping by, this is Zhiqiang, a developer based in Beijing, China. I
 
   <p align="left">
     <a href="https://github.com/zhiqwang?tab=repositories">
-      <img src="https://github-readme-stats.vercel.app/api?username=zhiqwang&count_private=true&show_icons=true" alt="github readme stats" height="156"/>
+      <img src="https://github-readme-stats.vercel.app/api?username=zhiqwang&count_private=true&show_icons=true" alt="github readme stats" height="180"/>
     </a>
   </p>
