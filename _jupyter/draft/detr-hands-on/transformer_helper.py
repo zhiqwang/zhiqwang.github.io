@@ -1,4 +1,7 @@
+import io
 import math
+from collections import Counter
+
 import torch
 from torch import nn, Tensor
 from torch.nn import (
@@ -7,6 +10,8 @@ from torch.nn import (
     TransformerEncoderLayer,
     TransformerDecoderLayer,
 )
+from torch.nn.utils.rnn import pad_sequence
+from torchtext.vocab import Vocab
 
 
 class Seq2SeqTransformer(nn.Module):
@@ -102,6 +107,44 @@ class TokenEmbedding(nn.Module):
         return self.embedding(tokens.long()) * math.sqrt(self.emb_size)
 
 
+def build_vocab(filepath, tokenizer):
+    counter = Counter()
+    with io.open(filepath, encoding="utf8") as f:
+        for string_ in f:
+            counter.update(tokenizer(string_))
+    return Vocab(counter, specials=['<unk>', '<pad>', '<bos>', '<eos>'])
+
+
+def data_process(filepaths, src_vocab, src_tokenizer, tgt_vocab, tgt_tokenizer):
+    raw_fr_iter = iter(io.open(filepaths[0], encoding="utf8"))
+    raw_en_iter = iter(io.open(filepaths[1], encoding="utf8"))
+    data = []
+    for (raw_fr, raw_en) in zip(raw_fr_iter, raw_en_iter):
+        src_tensor = torch.tensor(
+            [src_vocab[token] for token in src_tokenizer(raw_fr.rstrip("\n"))],
+            dtype=torch.long,
+        )
+        tgt_tensor = torch.tensor(
+            [tgt_vocab[token] for token in tgt_tokenizer(raw_en.rstrip("\n"))],
+            dtype=torch.long,
+        )
+        data.append((src_tensor, tgt_tensor))
+    return data
+
+
+def generate_batch(data_batch, start_symbol, end_symbol, padding_symbol):
+    fr_batch, en_batch = [], []
+    for (fr_item, en_item) in data_batch:
+        fr_batch.append(
+            torch.cat([torch.tensor([start_symbol]), fr_item, torch.tensor([end_symbol])], dim=0))
+        en_batch.append(
+            torch.cat([torch.tensor([start_symbol]), en_item, torch.tensor([end_symbol])], dim=0))
+
+    fr_batch = pad_sequence(fr_batch, padding_value=padding_symbol)
+    en_batch = pad_sequence(en_batch, padding_value=padding_symbol)
+    return fr_batch, en_batch
+
+
 def generate_square_subsequent_mask(sz, device):
     """
     Create a ``subsequent word`` mask to stop a target word from attending to its subsequent words.
@@ -111,7 +154,7 @@ def generate_square_subsequent_mask(sz, device):
     return mask
 
 
-def create_mask(src, tgt, pad_idx, device):
+def create_mask(src, tgt, padding_symbol, device):
     """
     Create masks, for masking source and target padding tokens.
     """
@@ -121,26 +164,26 @@ def create_mask(src, tgt, pad_idx, device):
     tgt_mask = generate_square_subsequent_mask(tgt_seq_len, device)
     src_mask = torch.zeros((src_seq_len, src_seq_len), device=device).type(torch.bool)
 
-    src_padding_mask = (src == pad_idx).transpose(0, 1)
-    tgt_padding_mask = (tgt == pad_idx).transpose(0, 1)
+    src_padding_mask = (src == padding_symbol).transpose(0, 1)
+    tgt_padding_mask = (tgt == padding_symbol).transpose(0, 1)
     return src_mask, tgt_mask, src_padding_mask, tgt_padding_mask
 
 
-def loss_func(pad_idx):
-    return torch.nn.CrossEntropyLoss(ignore_index=pad_idx)
+def loss_func(padding_symbol):
+    return torch.nn.CrossEntropyLoss(ignore_index=padding_symbol)
 
 
-def train_epoch(model, train_iter, optimizer, pad_idx, device):
+def train_epoch(model, train_iter, optimizer, padding_symbol, device):
     model.train()
     losses = 0
-    for idx, (src, tgt) in enumerate(train_iter):
+    for (src, tgt) in train_iter:
         src = src.to(device)
         tgt = tgt.to(device)
 
         tgt_input = tgt[:-1, :]
 
         src_mask, tgt_mask, src_padding_mask, tgt_padding_mask = create_mask(
-            src, tgt_input, pad_idx, device)
+            src, tgt_input, padding_symbol, device)
 
         logits = model(src, tgt_input, src_mask, tgt_mask,
                        src_padding_mask, tgt_padding_mask, src_padding_mask)
@@ -148,7 +191,7 @@ def train_epoch(model, train_iter, optimizer, pad_idx, device):
         optimizer.zero_grad()
 
         tgt_out = tgt[1:,:]
-        loss_fn = loss_func(pad_idx)
+        loss_fn = loss_func(padding_symbol)
         loss = loss_fn(logits.reshape(-1, logits.shape[-1]), tgt_out.reshape(-1))
         loss.backward()
 
@@ -157,22 +200,23 @@ def train_epoch(model, train_iter, optimizer, pad_idx, device):
     return losses / len(train_iter)
 
 
-def evaluate(model, val_iter, pad_idx, device):
+@torch.no_grad()
+def evaluate(model, val_iter, padding_symbol, device):
     model.eval()
     losses = 0
-    for idx, (src, tgt) in (enumerate(val_iter)):
+    for idx, (src, tgt) in enumerate(val_iter):
         src = src.to(device)
         tgt = tgt.to(device)
 
         tgt_input = tgt[:-1, :]
 
         src_mask, tgt_mask, src_padding_mask, tgt_padding_mask = create_mask(
-            src, tgt_input, pad_idx, device)
+            src, tgt_input, padding_symbol, device)
 
         logits = model(src, tgt_input, src_mask, tgt_mask,
                        src_padding_mask, tgt_padding_mask, src_padding_mask)
         tgt_out = tgt[1:,:]
-        loss_fn = loss_func(pad_idx)
+        loss_fn = loss_func(padding_symbol)
         loss = loss_fn(logits.reshape(-1, logits.shape[-1]), tgt_out.reshape(-1))
         losses += loss.item()
     return losses / len(val_iter)
@@ -200,14 +244,15 @@ def greedy_decode(model, src, src_mask, max_len, start_symbol, end_symbol, devic
     return ys
 
 
-def translate(model, src, src_vocab, tgt_vocab, src_tokenizer, bos_idx, eos_idx, device):
+@torch.no_grad()
+def translate(model, src, src_vocab, tgt_vocab, src_tokenizer, start_symbol, end_symbol, device):
     model.eval()
-    tokens = [bos_idx] + [src_vocab.stoi[tok] for tok in src_tokenizer(src)] + [eos_idx]
+    tokens = [start_symbol] + [src_vocab.stoi[tok] for tok in src_tokenizer(src)] + [end_symbol]
     num_tokens = len(tokens)
     src = (torch.LongTensor(tokens).reshape(num_tokens, 1))
     src_mask = (torch.zeros(num_tokens, num_tokens)).type(torch.bool)
     tgt_tokens = greedy_decode(model, src, src_mask, max_len=num_tokens + 5,
-                               start_symbol=bos_idx, end_symbol=eos_idx,
+                               start_symbol=start_symbol, end_symbol=end_symbol,
                                device=device).flatten()
     tgt_language = " ".join([tgt_vocab.itos[tok] for tok in tgt_tokens])
     tgt_language = tgt_language.replace("<bos> ", "").replace(" <eos>", "")
