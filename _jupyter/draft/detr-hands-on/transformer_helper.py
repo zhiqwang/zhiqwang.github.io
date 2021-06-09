@@ -53,8 +53,9 @@ class Seq2SeqTransformer(nn.Module):
         self.generator = nn.Linear(emb_size, tgt_vocab_size)
 
     def forward(
-        self, src: Tensor,
-        trg: Tensor,
+        self,
+        src: Tensor,
+        tgt: Tensor,
         src_mask: Tensor,
         tgt_mask: Tensor,
         src_padding_mask: Tensor,
@@ -62,7 +63,7 @@ class Seq2SeqTransformer(nn.Module):
         memory_key_padding_mask: Tensor,
     ):
         src_emb = self.positional_encoding(self.src_tok_emb(src))
-        tgt_emb = self.positional_encoding(self.tgt_tok_emb(trg))
+        tgt_emb = self.positional_encoding(self.tgt_tok_emb(tgt))
         memory = self.transformer_encoder(src_emb, src_mask, src_padding_mask)
         outs = self.transformer_decoder(
             tgt_emb, memory, tgt_mask, None, tgt_padding_mask, memory_key_padding_mask)
@@ -190,7 +191,7 @@ def train_epoch(model, train_iter, optimizer, padding_symbol, device):
 
         optimizer.zero_grad()
 
-        tgt_out = tgt[1:,:]
+        tgt_out = tgt[1:, :]
         loss_fn = loss_func(padding_symbol)
         loss = loss_fn(logits.reshape(-1, logits.shape[-1]), tgt_out.reshape(-1))
         loss.backward()
