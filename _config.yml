@@ -72,7 +72,7 @@ plugins:
 author:
   name: "Zhiqiang Wang"
   avatar: "/assets/images/zhiqiang-2021.png"
-  bio: "An aspiring mathematician and data scientist. Fan of tech, soccer, guitar, and food."
+  bio: "Put down the books, computes."
   location: "Beijing, China"
   links:
     - label: "Email"
@@ -123,14 +123,6 @@ defaults:
   #     author_profile: true
   #     share: true
   #     related: true
-
-# SEO related
-# analytics:
-#   provider: "google-gtag"
-#   google:
-#     tracking_id: "UA-154432000-1"
-#     anonymize_ip: false # default
-# google_site_verification: google9c27511a2a69fff6.html
 
 category_archive:
   type: liquid

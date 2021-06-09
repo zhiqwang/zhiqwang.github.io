@@ -1,10 +1,25 @@
 data-bin
 checkpoints
+
+# Vscode
 .vscode
 
+# Ruby Gem
+*.gem
+.bundle
+Gemfile.lock
+**/vendor/bundle
+
+# macOS
 .DS_Store
-assets/images/.DS_Store
-_jupyter/.DS_Store
+
+# Jekyll generated files
+.jekyll-cache
+.jekyll-metadata
+.sass-cache
+_asset_bundler_cache
+_site
+
 .ipynb_checkpoints
 __pycache__/
 _jupyter/data/
