@@ -66,7 +66,6 @@ def plot_results(pil_img, prob, boxes):
     plt.axis('off')
 
 
-
 def get_attention_weights(model, img):
     cpu_device = torch.device("cpu")
     # use lists to store the outputs via up-values
