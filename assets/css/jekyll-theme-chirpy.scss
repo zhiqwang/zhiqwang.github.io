@@ -1,0 +1,30 @@
+---
+---
+
+/* prettier-ignore */
+@use 'main
+{%- if jekyll.environment == 'production' -%}
+  .bundle
+{%- endif -%}
+';
+
+/* append your custom style below */
+:root {
+  --font-sans-zh: "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
+  --font-mono-zh: "JetBrains Mono", "Cascadia Mono", "Sarasa Mono SC", "Noto Sans Mono CJK SC", "Source Code Pro", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+/* Body text and article content */
+body {
+  font-family: var(--font-sans-zh);
+}
+
+/* Inline code and code blocks */
+code,
+kbd,
+samp,
+pre,
+.highlight,
+.highlighter-rouge {
+  font-family: var(--font-mono-zh);
+}
