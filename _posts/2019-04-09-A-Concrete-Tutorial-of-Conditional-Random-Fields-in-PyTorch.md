@@ -19,7 +19,7 @@ In this tutorial, we use the **conditional random fields (CRFs)** to model the n
 
 
 ## Mathematical overview of Conditional Random Fields
-**A brief note on notation:** Assume that we have some sequence length `$m$`, and some set of possible tags `$\mathcal{Y}$`. Let `$\mathbf{y}$` be a tag sequence `$y_1\ldots y_m$`, and `$\mathbf{x}$` an input sequence of words `$x_1\ldots x_m$`. For any tag sequence `$y_1\ldots y_m$` where each `$y_i\in\mathcal{Y}$`, we define the *potential* for the sequence as^[[Collins's write up on CRFs.](http://www.cs.columbia.edu/~mcollins/crf.pdf)]
+**A brief note on notation:** Assume that we have some sequence length `$m$`, and some set of possible tags `$\mathcal{Y}$`. Let `$\mathbf{y}$` be a tag sequence `$y_1\ldots y_m$`, and `$\mathbf{x}$` an input sequence of words `$x_1\ldots x_m$`. For any tag sequence `$y_1\ldots y_m$` where each `$y_i\in\mathcal{Y}$`, we define the *potential* for the sequence as^[[Collins's write up on CRFs.](https://www.cs.columbia.edu/~mcollins/crf.pdf)]
 
 `$$\begin{equation*}
     \psi(y_1\ldots y_m) = \prod^m_{i=1} \psi(y_{i-1},y_i,i),
@@ -65,7 +65,7 @@ To make the partition function tractable, the potentials must look only at local
     &= \sum_i\left\{\log \psi_\text{EMIT}(x_i \mid y_i) + \log \psi_\text{TRANS}(y_i\mid y_{i-1})\right\}.\label{eq:relation}
 \end{align}$$`
 
-This has exactly the log-linear form of a CRF if we consider these log-probabilities to be the weights associated to transition and emission indicator features.^[[Chen' introduction to Conditional Random Fields.](http://blog.echen.me/2012/01/03/introduction-to-conditional-random-fields)]
+This has exactly the log-linear form of a CRF if we consider these log-probabilities to be the weights associated to transition and emission indicator features.^[[Chen' introduction to Conditional Random Fields.](https://www.edwinchen.ai/archived-blog/introduction-to-conditional-random-fields)]
 
 
 ## Model's Parameters

@@ -7,7 +7,7 @@ tags: [fréchet-derivative, matrix-calculus]
 
 After a period of learning the [Fréchet derivative](https://en.wikipedia.org/wiki/Fréchet_derivative), I look back to think about the problem of computing the derivative of `$y = \Vert A x - b \Vert^2$` with respect to the variable `$x$`. I knew the derivative of this function, `$2A^\mathsf{T}(Ax - b)$`, when I was a second year master student (2015). And I have used this conclusion effectively in combination with the product rule in multiple applications. Unfortunately, I feel confused about how I came to this conclusion at that time. So I rethink the problem from the viewpoint of *Fréchet derivative*, and then I'll give an answer based on this viewpoint.
 
-Traditionally, *matrix calculus* is presented as a notation for organizing partial derivatives.^[[Xu's write up on Matrix derivative.](http://www.cs.cmu.edu/~minx/matrixcal.pdf)] It collects the various partial derivatives of a single function with respect to many variables into vectors that can be treated as single entities.^[[Wiki page of Matrix calculus.](https://en.wikipedia.org/wiki/Matrix_calculus)] In our case, the derivative of a scalar `$y$` by a vector
+Traditionally, *matrix calculus* is presented as a notation for organizing partial derivatives.^[[Xu's write up on Matrix derivative.](https://www.cs.cmu.edu/~minx/matrixcal.pdf)] It collects the various partial derivatives of a single function with respect to many variables into vectors that can be treated as single entities.^[[Wiki page of Matrix calculus.](https://en.wikipedia.org/wiki/Matrix_calculus)] In our case, the derivative of a scalar `$y$` by a vector
 
 `$$\begin{equation*}
     x = \begin{bmatrix} x_1 \\ x_2 \\ \vdots \\ x_n \end{bmatrix},
