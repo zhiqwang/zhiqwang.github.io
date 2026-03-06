@@ -1,7 +1,8 @@
 ---
 title: 'A Concrete Tutorial of Conditional Random Fields in PyTorch'
+date: 2019-04-09 17:27:00 +0800
+categories: [Machine Learning]
 tags: [graphical-models, conditional-random-fields, iterative-method]
-date: '2019-04-09 17:27:00 +0800'
 ---
 
 Solving an optimization problem with **iterative methodology** often have five ingredient:

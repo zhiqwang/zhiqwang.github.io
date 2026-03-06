@@ -1,7 +1,8 @@
 ---
 title: 'Interpretation of matrix calculus with Fréchet derivative'
+date: 2018-03-31 20:00:00 +0800
+categories: [Mathematics]
 tags: [fréchet-derivative, matrix-calculus]
-date: '2018-03-31 20:00:00 +0800'
 ---
 
 After a period of learning the [Fréchet derivative](https://en.wikipedia.org/wiki/Fréchet_derivative), I look back to think about the problem of computing the derivative of `$y = \Vert A x - b \Vert^2$` with respect to the variable `$x$`. I knew the derivative of this function, `$2A^\mathsf{T}(Ax - b)$`, when I was a second year master student (2015). And I have used this conclusion effectively in combination with the product rule in multiple applications. Unfortunately, I feel confused about how I came to this conclusion at that time. So I rethink the problem from the viewpoint of *Fréchet derivative*, and then I'll give an answer based on this viewpoint.
