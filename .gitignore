@@ -1,27 +1,27 @@
-data-bin
-checkpoints
-
-# Vscode
-.vscode
-
-# Ruby Gem
-*.gem
+# Bundler cache
 .bundle
+vendor
 Gemfile.lock
-**/vendor/bundle
 
-# macOS
-.DS_Store
-
-# Jekyll generated files
+# Jekyll cache
 .jekyll-cache
 .jekyll-metadata
-.sass-cache
-_asset_bundler_cache
 _site
 
-.ipynb_checkpoints
-__pycache__/
-_jupyter/data/
-_jupyter/.data/
-_jupyter/tagger/
+# RubyGems
+*.gem
+
+# NPM dependencies
+node_modules
+package-lock.json
+
+# IDE configurations
+.idea
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+
+# Misc
+_sass/vendors
+assets/js/dist
