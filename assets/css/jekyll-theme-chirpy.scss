@@ -85,7 +85,7 @@ pre,
   flex-wrap: wrap;
   gap: 1.5rem;
   align-items: center;
-  padding: 1.5rem;
+  padding: 1.5rem 1.5rem 0.5rem;
 }
 
 .lighterpack-chart-shell {
@@ -137,12 +137,13 @@ pre,
 
 /* ── Totals table (LP uses display:table via .lpTable/.lpRow/.lpCell) ── */
 .lighterpack-summary-table-wrap {
-  flex: 1 1 340px;
+  flex: 0 0 340px;
+  max-width: 100%;
 }
 
 .lighterpack-totals {
   display: table;
-  width: 100%;
+  width: auto;
   margin: 0;
   padding: 0;
   list-style: none;
