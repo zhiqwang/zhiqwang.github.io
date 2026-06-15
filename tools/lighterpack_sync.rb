@@ -354,7 +354,8 @@ class LighterpackSync
   end
 
   def deep_dup(obj)
-    Marshal.load(Marshal.dump(obj))
+    require "json"
+    JSON.parse(JSON.generate(obj))
   end
 end
 

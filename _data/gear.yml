@@ -124,7 +124,7 @@ nitecore-nb10000:
   name: nb10000
   brand: NITECORE
   weight_mg: 150000
-  description: "NITCORE NB10000 Gen2; USB line"
+  description: "NITECORE NB10000 Gen2; USB line"
   category_hint: Device
 
 zenone-z1902:
