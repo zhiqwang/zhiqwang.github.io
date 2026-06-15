@@ -315,7 +315,7 @@ pre,
 /* ── Mobile: LP uses 720px breakpoint ── */
 @media only screen and (max-width: 720px) {
   .lighterpack-summary {
-    padding: 1.1rem;
+    padding: 1.1rem 1.1rem 0.5rem;
   }
 
   .lighterpack-chart-shell {
@@ -353,6 +353,12 @@ pre,
     order: 1;
   }
 
+  .lighterpack-item-qty::after {
+    content: " x ";
+    display: inline;
+    margin-right: 5px;
+  }
+
   .lighterpack-item-qty[data-qty="1"] {
     display: none;
   }
@@ -387,6 +393,7 @@ pre,
 @media only screen and (max-width: 480px) {
   .lighterpack-summary {
     flex-direction: column;
+    gap: 1rem;
   }
 
   .lighterpack-chart-shell {
