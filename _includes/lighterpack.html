@@ -1,0 +1,108 @@
+{% assign pack = site.data.lighterpack[include.id] %}
+
+{% if pack %}
+<div class="lighterpack-embed" id="lighterpack-{{ include.id }}">
+  {% if include.show_title != 'false' %}
+  <div class="lighterpack-header">
+    <div>
+      <h2 class="lighterpack-title">{{ pack.title }}</h2>
+      <p class="lighterpack-meta">
+        <a href="{{ pack.source_url }}" rel="noopener noreferrer">Open original on LighterPack</a>
+        <span>Snapshot {{ pack.snapshot_at | date: "%Y-%m-%d" }}</span>
+      </p>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="lighterpack-summary">
+    <div class="lighterpack-chart-shell">
+      <div class="lighterpack-chart" style="--lp-chart: conic-gradient({{ pack.chart_css }});">
+        <div class="lighterpack-chart-center">
+          <span class="lighterpack-total-label">Total</span>
+          <strong class="lighterpack-total-value">{{ pack.total.display }}</strong>
+          <span class="lighterpack-total-items">{{ pack.total.item_count }} items</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="lighterpack-summary-table-wrap">
+      <table class="lighterpack-summary-table">
+        <thead>
+          <tr>
+            <th aria-hidden="true"></th>
+            <th>Category</th>
+            <th>Weight</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for category in pack.categories %}
+          <tr>
+            <td>
+              <span class="lighterpack-dot" style="background-color: {{ category.color }};"></span>
+            </td>
+            <td>{{ category.name }}</td>
+            <td>{{ category.weight.display }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td></td>
+            <td>Total</td>
+            <td>{{ pack.total.display }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="lighterpack-categories">
+    {% for category in pack.categories %}
+    <section class="lighterpack-category">
+      <div class="lighterpack-category-header">
+        <div class="lighterpack-category-name">
+          <span class="lighterpack-dot" style="background-color: {{ category.color }};"></span>
+          <h3>{{ category.name }}</h3>
+        </div>
+        <div class="lighterpack-category-total">{{ category.weight.display }}</div>
+      </div>
+
+      <div class="lighterpack-table-wrap">
+        <table class="lighterpack-items-table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Weight</th>
+              <th>qty</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in category.items %}
+            <tr>
+              <td>
+                <div class="lighterpack-item-name">{{ item.name }}</div>
+                {% if item.description != '' %}
+                <div class="lighterpack-item-description">{{ item.description }}</div>
+                {% endif %}
+              </td>
+              <td>{{ item.weight.display }}</td>
+              <td>{{ item.quantity }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td>{{ category.name }}</td>
+              <td>{{ category.weight.display }}</td>
+              <td>{{ category.item_count }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </section>
+    {% endfor %}
+  </div>
+</div>
+{% else %}
+<p>Missing LighterPack snapshot for {{ include.id }}.</p>
+{% endif %}
