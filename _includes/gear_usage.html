@@ -1,0 +1,50 @@
+{% comment %}
+  Gear usage reverse index.
+  For each gear item, find all packs that reference it.
+  Usage: {% include gear_usage.html slug="fuga-air13" %}
+{% endcomment %}
+
+{% assign target_slug = include.slug %}
+{% assign used_in = "" %}
+
+{% for pack_entry in site.data.lighterpack %}
+  {% assign pack = pack_entry[1] %}
+  {% for category in pack.categories %}
+    {% for item in category.items %}
+      {% if item.gear == target_slug %}
+        {% if used_in != "" %}
+          {% assign used_in = used_in | append: "|" %}
+        {% endif %}
+        {% assign used_in = used_in | append: pack.title | append: "::" | append: pack.id %}
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+{% endfor %}
+
+{% if used_in != "" %}
+<ul class="gear-usage-list">
+  {% assign packs = used_in | split: "|" %}
+  {% for pack_info in packs %}
+    {% assign parts = pack_info | split: "::" %}
+    {% assign pack_title = parts[0] %}
+    {% assign pack_id = parts[1] %}
+    {% comment %} Find the post that uses this pack {% endcomment %}
+    {% assign found_post = nil %}
+    {% for post in site.posts %}
+      {% if post.content contains pack_id %}
+        {% assign found_post = post %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+    <li>
+      {% if found_post %}
+        <a href="{{ found_post.url | relative_url }}">{{ pack_title }}</a>
+      {% else %}
+        {{ pack_title }}
+      {% endif %}
+    </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="gear-usage-none">尚未在任何活动中使用。</p>
+{% endif %}

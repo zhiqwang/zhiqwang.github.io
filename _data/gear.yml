@@ -1,0 +1,142 @@
+# Central gear catalog — single source of truth for all gear items.
+# Each key is a unique slug used to reference the item from pack files.
+# Pack files in _data/lighterpack/ use `gear: <slug>` to reference items here.
+
+fuga-air13:
+  name: Run Vest AIR 13
+  brand: FUGA
+  weight_mg: 230000
+  description: "FUGA AIR13; 高频口哨"
+  category_hint: Cloth
+
+fuga-soft-flask:
+  name: Soft Flask
+  brand: FUGA
+  weight_mg: 38000
+  description: "FUGA"
+  category_hint: Cloth
+
+fuga-aero-light2:
+  name: AERO light2.0
+  brand: FUGA
+  weight_mg: 135000
+  description: "FUGA light2.0"
+  category_hint: Cloth
+
+fuga-ex330:
+  name: EX330
+  brand: FUGA
+  weight_mg: 570000
+  description: "FUGA"
+  category_hint: Cloth
+
+fuga-running-top:
+  name: Running Top
+  brand: FUGA
+  weight_mg: 180000
+  description: "FUGA Crew-neck Top"
+  category_hint: Cloth
+
+space-blanket:
+  name: Space Blanket
+  weight_mg: 55000
+  description: ""
+  category_hint: Cloth
+
+outopia-short-tights:
+  name: Short Tights
+  brand: Outopia
+  weight_mg: 155000
+  description: "Outopia Men's Soul Run Short Tights 2.5L"
+  category_hint: Cloth
+
+outopia-running-cap:
+  name: Running Cap
+  brand: Outopia
+  weight_mg: 45000
+  description: "Outopia Unisex's Wild Hat Running Cap"
+  category_hint: Cloth
+
+injinji-mini-crew-toesocks:
+  name: Mini Crew Toesocks
+  brand: Injinji
+  weight_mg: 42000
+  description: "Injinji Run Lightweight Mini Crew Unisex Toesocks"
+  category_hint: Cloth
+
+ud-race-belt-5:
+  name: Race Belt 5.0
+  brand: Ultimate Direction
+  weight_mg: 71000
+  description: "Ultimate Direction"
+  category_hint: Cloth
+
+deeplant-electrolyte:
+  name: Deeplant
+  brand: Deeplant
+  weight_mg: 27000
+  description: "电解质液"
+  category_hint: Eat
+
+sis-go-isotonic:
+  name: Go Isotonic
+  brand: SiS
+  weight_mg: 66000
+  description: "Sis 等渗"
+  category_hint: Eat
+
+sis-beta-fuel:
+  name: Beta Fuel
+  brand: SiS
+  weight_mg: 66000
+  description: "Sis 黑胶"
+  category_hint: Eat
+
+maisheng-energy-cruiser:
+  name: Energy Cruiser
+  brand: 迈胜
+  weight_mg: 60000
+  description: "迈胜黑胶"
+  category_hint: Eat
+
+huawei-mate70:
+  name: mate70
+  brand: Huawei
+  weight_mg: 203000
+  description: "Huawei"
+  category_hint: Device
+
+coros-vertix-2s:
+  name: vertix 2s
+  brand: COROS
+  weight_mg: 87000
+  description: "coros"
+  category_hint: Device
+
+fenix-hl18r:
+  name: HL18R
+  brand: FENIX
+  weight_mg: 91000
+  description: "FENIX HL18R-T v2.0"
+  category_hint: Device
+
+nitecore-nb10000:
+  name: nb10000
+  brand: NITECORE
+  weight_mg: 150000
+  description: "NITECORE NB10000 Gen2; USB line"
+  category_hint: Device
+
+zenone-z1902:
+  name: Z1902
+  brand: ZENONE
+  weight_mg: 113000
+  description: "ZENONE 120cm"
+  category_hint: Device
+
+huawei-freeclip2:
+  name: FreeClip2
+  brand: Huawei
+  weight_mg: 48000
+  description: "Huawei"
+  category_hint: Device
