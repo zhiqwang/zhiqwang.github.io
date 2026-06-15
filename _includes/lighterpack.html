@@ -26,33 +26,27 @@
     </div>
 
     <div class="lighterpack-summary-table-wrap">
-      <table class="lighterpack-summary-table">
-        <thead>
-          <tr>
-            <th aria-hidden="true"></th>
-            <th>Category</th>
-            <th>Weight</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for category in pack.categories %}
-          <tr>
-            <td>
-              <span class="lighterpack-dot" style="background-color: {{ category.color }};"></span>
-            </td>
-            <td>{{ category.name }}</td>
-            <td>{{ category.weight.display }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td></td>
-            <td>Total</td>
-            <td>{{ pack.total.display }}</td>
-          </tr>
-        </tfoot>
-      </table>
+      <ul class="lighterpack-totals">
+        <li class="lighterpack-totals-header">
+          <span class="lighterpack-totals-cell">&nbsp;</span>
+          <span class="lighterpack-totals-cell">Category</span>
+          <span class="lighterpack-totals-cell">Weight</span>
+        </li>
+        {% for category in pack.categories %}
+        <li class="lighterpack-totals-row">
+          <span class="lighterpack-totals-cell lighterpack-totals-legend-cell">
+            <span class="lighterpack-legend" style="background-color: {{ category.color }};"></span>
+          </span>
+          <span class="lighterpack-totals-cell">{{ category.name }}</span>
+          <span class="lighterpack-totals-cell lighterpack-number">{{ category.weight.display }}</span>
+        </li>
+        {% endfor %}
+        <li class="lighterpack-totals-footer">
+          <span class="lighterpack-totals-cell"></span>
+          <span class="lighterpack-totals-cell lighterpack-subtotal" title="{{ pack.total.item_count }} items">Total</span>
+          <span class="lighterpack-totals-cell lighterpack-number lighterpack-subtotal">{{ pack.total.display }}</span>
+        </li>
+      </ul>
     </div>
   </div>
 
@@ -61,7 +55,7 @@
     <section class="lighterpack-category">
       <ul class="lighterpack-items">
         <li class="lighterpack-items-header">
-          <h3 class="lighterpack-category-name">{{ category.name }}</h3>
+          <h2 class="lighterpack-category-name">{{ category.name }}</h2>
           <span class="lighterpack-col-weight">Weight</span>
           <span class="lighterpack-col-qty">qty</span>
         </li>
@@ -69,20 +63,20 @@
         {% for item in category.items %}
         <li class="lighterpack-item{% if item.worn %} lighterpack-item-worn{% endif %}{% if item.consumable %} lighterpack-item-consumable{% endif %}{% if item.star %} lighterpack-item-star{% endif %}">
           <span class="lighterpack-item-name">{{ item.name }}</span>
-          {% if item.description != '' %}<span class="lighterpack-item-description">{{ item.description }}</span>{% endif %}
+          <span class="lighterpack-item-description">{% if item.description != '' %}{{ item.description }}{% endif %}</span>
           <span class="lighterpack-item-actions">
             {% if item.worn %}<i class="lighterpack-icon lighterpack-icon-worn" title="Worn weight">👕</i>{% endif %}
             {% if item.consumable %}<i class="lighterpack-icon lighterpack-icon-consumable" title="Consumable">💧</i>{% endif %}
             {% if item.star %}<i class="lighterpack-icon lighterpack-icon-star" title="Starred">⭐</i>{% endif %}
           </span>
-          <span class="lighterpack-item-weight">{{ item.weight.display }}</span>
-          <span class="lighterpack-item-qty" data-qty="{{ item.quantity }}">{{ item.quantity }}</span>
+          <span class="lighterpack-item-weight lighterpack-number">{{ item.weight.display }}</span>
+          <span class="lighterpack-item-qty lighterpack-number" data-qty="{{ item.quantity }}">{{ item.quantity }}</span>
         </li>
         {% endfor %}
 
         <li class="lighterpack-items-footer">
-          <span class="lighterpack-subtotal-weight">{{ category.weight.display }}</span>
-          <span class="lighterpack-subtotal-qty">{{ category.item_count }}</span>
+          <span class="lighterpack-subtotal-weight lighterpack-number"><div class="lighterpack-subtotal">{{ category.weight.display }}</div></span>
+          <span class="lighterpack-subtotal-qty lighterpack-number"><div class="lighterpack-subtotal">{{ category.item_count }}</div></span>
         </li>
       </ul>
     </section>

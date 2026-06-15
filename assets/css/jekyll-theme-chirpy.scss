@@ -29,6 +29,8 @@ pre,
   font-family: var(--font-mono-zh);
 }
 
+/* ── LighterPack embed ── */
+/* Font & base: matches LP _common.scss */
 .lighterpack-embed {
   margin: 2rem 0;
   border: 1px solid rgba(148, 163, 184, 0.26);
@@ -36,6 +38,27 @@ pre,
   background: var(--card-bg, #fff);
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
   overflow: hidden;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  line-height: 1.3;
+  color: #282828;
+  box-sizing: border-box;
+}
+
+.lighterpack-embed *,
+.lighterpack-embed *::before,
+.lighterpack-embed *::after {
+  box-sizing: inherit;
+}
+
+.lighterpack-number {
+  text-align: right;
+}
+
+.lighterpack-subtotal {
+  text-align: right;
+  white-space: nowrap;
+  font-weight: 600;
 }
 
 .lighterpack-header {
@@ -52,10 +75,11 @@ pre,
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-  color: var(--text-muted-color, #64748b);
+  color: #666;
   font-size: 0.92rem;
 }
 
+/* ── Summary section (chart + totals) ── */
 .lighterpack-summary {
   display: flex;
   flex-wrap: wrap;
@@ -101,7 +125,7 @@ pre,
 
 .lighterpack-total-label,
 .lighterpack-total-items {
-  color: var(--text-muted-color, #64748b);
+  color: #666;
   font-size: 0.92rem;
 }
 
@@ -111,54 +135,77 @@ pre,
   line-height: 1.2;
 }
 
+/* ── Totals table (LP uses display:table via .lpTable/.lpRow/.lpCell) ── */
 .lighterpack-summary-table-wrap {
   flex: 1 1 340px;
 }
 
-.lighterpack-summary-table {
+.lighterpack-totals {
+  display: table;
   width: 100%;
-  border-collapse: collapse;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.lighterpack-summary-table th,
-.lighterpack-summary-table td {
-  padding: 0.7rem 0.8rem;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
-  vertical-align: top;
+.lighterpack-totals-header,
+.lighterpack-totals-row,
+.lighterpack-totals-footer {
+  display: table-row;
 }
 
-.lighterpack-summary-table thead th {
-  color: var(--text-muted-color, #64748b);
-  font-size: 0.88rem;
-  font-weight: 600;
-  text-transform: none;
-}
-
-.lighterpack-summary-table td:last-child,
-.lighterpack-summary-table th:last-child {
-  text-align: right;
-  white-space: nowrap;
-}
-
-.lighterpack-summary-table tfoot td {
-  font-weight: 700;
-  border-bottom: 0;
-}
-
-.lighterpack-dot {
-  display: inline-block;
-  width: 0.8rem;
-  height: 0.8rem;
-  border-radius: 999px;
+.lighterpack-totals-cell {
+  display: table-cell;
+  border-top: 1px dotted #aaa;
+  padding: 1px 8px;
   vertical-align: middle;
 }
 
+.lighterpack-totals-cell:first-child {
+  padding-left: 0;
+}
+
+.lighterpack-totals-cell:last-child {
+  padding-right: 0;
+}
+
+.lighterpack-totals-header .lighterpack-totals-cell {
+  border-top: none;
+  border-bottom: 1px solid #aaa;
+  font-weight: 600;
+  vertical-align: bottom;
+}
+
+.lighterpack-totals-header + .lighterpack-totals-row .lighterpack-totals-cell {
+  border-top: none;
+}
+
+.lighterpack-totals-footer .lighterpack-totals-cell {
+  border-top: 1px solid #aaa;
+  font-weight: 600;
+}
+
+.lighterpack-totals-legend-cell {
+  width: 12px;
+}
+
+/* LP legend: 10x10 square with white border */
+.lighterpack-legend {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border: 1px solid #fff;
+}
+
+/* ── Category items (LP flex layout) ── */
 .lighterpack-categories {
   border-top: 1px solid rgba(148, 163, 184, 0.18);
 }
 
 .lighterpack-category {
   padding: 0;
+  list-style: none;
+  margin: 0 0 20px;
 }
 
 .lighterpack-category + .lighterpack-category {
@@ -178,35 +225,35 @@ pre,
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: 0.45rem 1.5rem;
-  border-top: 1px dotted rgba(148, 163, 184, 0.35);
+  border-top: 1px dotted #aaa;
+  padding: 1px 20px;
 }
 
 .lighterpack-items-header {
   border-top: none;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.35);
-  padding-top: 1rem;
-  padding-bottom: 0.45rem;
+  border-bottom: 1px solid #aaa;
+  height: 31px;
   align-items: flex-end;
 }
 
 .lighterpack-items-footer {
-  border-top: 1px solid rgba(148, 163, 184, 0.35);
+  border-top-style: solid;
   justify-content: flex-end;
-  padding-top: 0.55rem;
-  padding-bottom: 0.8rem;
 }
 
+/* LP share: h2.lpCategoryName { font-size:18px; margin:0 } */
 .lighterpack-category-name {
   flex: 1 1 auto;
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 18px;
+  font-weight: 600;
 }
 
+/* Header column labels: LP .lpHeader { text-align: center } */
 .lighterpack-col-weight,
 .lighterpack-col-qty {
-  color: var(--text-muted-color, #64748b);
-  font-size: 0.88rem;
+  color: #666;
+  font-size: 13px;
   text-align: center;
 }
 
@@ -218,10 +265,10 @@ pre,
   flex: 0 0 60px;
 }
 
+/* Item row cells: match LP flex values exactly */
 .lighterpack-item-name {
   flex: 1 1 150px;
   min-width: 50px;
-  font-weight: 600;
   margin-right: 4px;
 }
 
@@ -229,53 +276,46 @@ pre,
   flex: 2 0 200px;
   min-width: 100px;
   margin-right: 4px;
-  color: var(--text-muted-color, #64748b);
-  font-size: 0.94rem;
+  color: #666;
 }
 
+/* LP share: .lpActionsCell { flex-basis: 75px } */
 .lighterpack-item-actions {
   flex: 0 0 75px;
   text-align: right;
-  padding: 0 0.5rem;
+  padding: 0 10px;
 }
 
 .lighterpack-icon {
   font-style: normal;
-  margin-right: 4px;
+  margin-right: 8px;
   font-size: 0.85rem;
+  opacity: 1;
 }
 
+/* LP: .lpWeightCell { flex: 0 0 110px } + .lpNumber { text-align: right } */
 .lighterpack-item-weight {
   flex: 0 0 110px;
-  text-align: right;
-  white-space: nowrap;
 }
 
+/* LP: .lpQtyCell { flex: 0 0 60px } + .lpNumber { text-align: right } */
 .lighterpack-item-qty {
   flex: 0 0 60px;
-  text-align: center;
 }
 
+/* Footer subtotals */
 .lighterpack-subtotal-weight {
   flex: 0 0 110px;
-  text-align: right;
-  white-space: nowrap;
-  font-weight: 700;
 }
 
 .lighterpack-subtotal-qty {
   flex: 0 0 60px;
-  text-align: center;
-  font-weight: 700;
 }
 
-@media (max-width: 768px) {
-  .lighterpack-summary,
-  .lighterpack-items-header,
-  .lighterpack-item,
-  .lighterpack-items-footer {
-    padding-left: 1.1rem;
-    padding-right: 1.1rem;
+/* ── Mobile: LP uses 720px breakpoint ── */
+@media only screen and (max-width: 720px) {
+  .lighterpack-summary {
+    padding: 1.1rem;
   }
 
   .lighterpack-chart-shell {
@@ -287,31 +327,25 @@ pre,
     gap: 0.25rem;
   }
 
+  .lighterpack-items-header,
+  .lighterpack-item,
+  .lighterpack-items-footer {
+    padding-left: 1.1rem;
+    padding-right: 1.1rem;
+  }
+
   .lighterpack-item {
     flex-wrap: wrap;
     align-items: baseline;
     justify-content: flex-end;
+    padding-top: 3px;
+    padding-bottom: 3px;
   }
 
   .lighterpack-item-name {
     flex-basis: 90px;
+    font-weight: bold;
     order: 2;
-  }
-
-  .lighterpack-item-description {
-    flex-basis: calc(100% - 50px);
-    order: 98;
-  }
-
-  .lighterpack-item-actions {
-    flex: 0 0 auto;
-    order: 99;
-    padding: 0 0.5rem;
-  }
-
-  .lighterpack-item-weight {
-    flex-basis: 100px;
-    order: 5;
   }
 
   .lighterpack-item-qty {
@@ -323,6 +357,23 @@ pre,
     display: none;
   }
 
+  .lighterpack-item-weight {
+    flex-basis: 100px;
+    order: 5;
+  }
+
+  .lighterpack-item-description {
+    flex-basis: calc(100% - 50px);
+    order: 98;
+  }
+
+  .lighterpack-item-actions {
+    flex: 0 0 auto;
+    order: 99;
+    padding: 0 10px;
+    text-align: right;
+  }
+
   .lighterpack-items-header {
     .lighterpack-col-weight,
     .lighterpack-col-qty {
@@ -332,5 +383,15 @@ pre,
 
   .lighterpack-items-footer .lighterpack-subtotal-qty {
     display: none;
+  }
+}
+
+@media only screen and (max-width: 480px) {
+  .lighterpack-summary {
+    flex-direction: column;
+  }
+
+  .lighterpack-chart-shell {
+    max-width: 200px;
   }
 }
