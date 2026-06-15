@@ -61,41 +61,28 @@
         </li>
 
         {% for item in category.items %}
-        {% comment %} Resolve gear reference: if item.gear exists, merge from _data/gear.yml {% endcomment %}
-        {% if item.gear %}
-          {% assign gear_entry = site.data.gear[item.gear] %}
-          {% assign resolved_name = item.name | default: gear_entry.name %}
-          {% assign resolved_description = item.description | default: gear_entry.description %}
-          {% if item.weight %}
-            {% assign resolved_weight_display = item.weight.display %}
-          {% else %}
-            {% assign weight_mg = gear_entry.weight_mg %}
-            {% if weight_mg >= 1000000 %}
-              {% assign weight_val = weight_mg | divided_by: 1000000.0 %}
-              {% assign resolved_weight_display = weight_val | append: " kg" %}
-            {% else %}
-              {% assign weight_val = weight_mg | divided_by: 1000 %}
-              {% assign resolved_weight_display = weight_val | append: " g" %}
-            {% endif %}
-          {% endif %}
-          {% assign resolved_worn = item.worn %}
-          {% assign resolved_consumable = item.consumable %}
-          {% assign resolved_star = item.star %}
-        {% else %}
-          {% assign resolved_name = item.name %}
-          {% assign resolved_description = item.description %}
+        {% assign gear_entry = site.data.gear[item.gear] %}
+        {% assign resolved_name = item.name | default: gear_entry.name %}
+        {% assign resolved_description = item.description | default: gear_entry.description %}
+        {% if item.weight %}
           {% assign resolved_weight_display = item.weight.display %}
-          {% assign resolved_worn = item.worn %}
-          {% assign resolved_consumable = item.consumable %}
-          {% assign resolved_star = item.star %}
+        {% else %}
+          {% assign weight_mg = gear_entry.weight_mg %}
+          {% if weight_mg >= 1000000 %}
+            {% assign weight_val = weight_mg | divided_by: 1000000.0 %}
+            {% assign resolved_weight_display = weight_val | append: " kg" %}
+          {% else %}
+            {% assign weight_val = weight_mg | divided_by: 1000 %}
+            {% assign resolved_weight_display = weight_val | append: " g" %}
+          {% endif %}
         {% endif %}
-        <li class="lighterpack-item{% if resolved_worn %} lighterpack-item-worn{% endif %}{% if resolved_consumable %} lighterpack-item-consumable{% endif %}{% if resolved_star %} lighterpack-item-star{% endif %}">
+        <li class="lighterpack-item{% if item.worn %} lighterpack-item-worn{% endif %}{% if item.consumable %} lighterpack-item-consumable{% endif %}{% if item.star %} lighterpack-item-star{% endif %}">
           <span class="lighterpack-item-name">{{ resolved_name }}</span>
           <span class="lighterpack-item-description">{% if resolved_description != '' %}{{ resolved_description }}{% endif %}</span>
           <span class="lighterpack-item-actions">
-            {% if resolved_worn %}<i class="lighterpack-icon lighterpack-icon-worn" title="Worn weight">👕</i>{% endif %}
-            {% if resolved_consumable %}<i class="lighterpack-icon lighterpack-icon-consumable" title="Consumable">💧</i>{% endif %}
-            {% if resolved_star %}<i class="lighterpack-icon lighterpack-icon-star" title="Starred">⭐</i>{% endif %}
+            {% if item.worn %}<i class="lighterpack-icon lighterpack-icon-worn" title="Worn weight">👕</i>{% endif %}
+            {% if item.consumable %}<i class="lighterpack-icon lighterpack-icon-consumable" title="Consumable">💧</i>{% endif %}
+            {% if item.star %}<i class="lighterpack-icon lighterpack-icon-star" title="Starred">⭐</i>{% endif %}
           </span>
           <span class="lighterpack-item-weight lighterpack-number">{{ resolved_weight_display }}</span>
           <span class="lighterpack-item-qty lighterpack-number" data-qty="{{ item.quantity }}">{{ item.quantity }}</span>

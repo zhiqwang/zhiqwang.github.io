@@ -23,6 +23,5 @@ tags: [trail-running, gear, Wutai]
    - 自动把新装备追加到 `_data/gear.yml`（已有装备按名称匹配复用）。
    - 生成引用格式的 `_data/lighterpack/abc123.yml`。
 3. 复制这份模板到 `_posts/YYYY-MM-DD-your-slug.md`，把标题、日期、permalink、tags 和 `PACK_ID` 替换掉。
-4. 如果需要旧的自包含格式，加 `--inline` 参数：`ruby tools/lighterpack_sync.rb --inline https://lighterpack.com/r/abc123`。
 
 装备在不同活动中共享，可以在 [Gear](/gear/) 页面查看每件装备的使用记录。

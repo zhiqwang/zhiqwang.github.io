@@ -12,23 +12,17 @@ class LighterpackSync
   DEFAULT_OUTPUT_DIR = File.expand_path("../_data/lighterpack", __dir__)
   DEFAULT_GEAR_PATH  = File.expand_path("../_data/gear.yml", __dir__)
 
-  def initialize(pack_ref, output_path = nil, inline: false)
+  def initialize(pack_ref, output_path = nil)
     @pack_id = normalize_pack_id(pack_ref)
     @source_url = URI("https://lighterpack.com/r/#{@pack_id}")
     @output_path = output_path || File.join(DEFAULT_OUTPUT_DIR, "#{@pack_id}.yml")
-    @inline = inline
     @gear_path = DEFAULT_GEAR_PATH
   end
 
   def run
     html = fetch_html
     pack = parse_pack(html)
-
-    if @inline
-      write_inline(pack)
-    else
-      write_with_gear_catalog(pack)
-    end
+    write_with_gear_catalog(pack)
   end
 
   private
@@ -247,16 +241,6 @@ class LighterpackSync
     format("%.2f", number).sub(/\.0+\z/, "").sub(/(\.\d*[1-9])0+\z/, '\\1')
   end
 
-  # --- Inline mode (legacy): writes a single self-contained YAML ----------
-
-  def write_inline(pack)
-    FileUtils.mkdir_p(File.dirname(@output_path))
-    File.open(@output_path, "w:UTF-8") do |file|
-      file.write(YAML.dump(pack))
-    end
-    puts "Wrote #{@output_path} (inline mode)"
-  end
-
   # --- Gear-catalog mode: updates _data/gear.yml and writes ref-based pack -
 
   def write_with_gear_catalog(pack)
@@ -359,24 +343,8 @@ class LighterpackSync
   end
 end
 
-require "optparse"
-
-options = { inline: false }
-OptionParser.new do |opts|
-  opts.banner = "Usage: ruby tools/lighterpack_sync.rb [options] PACK_ID_OR_URL [OUTPUT_PATH]"
-
-  opts.on("--inline", "Write self-contained YAML without gear catalog (legacy mode)") do
-    options[:inline] = true
-  end
-
-  opts.on("-h", "--help", "Print this help") do
-    puts opts
-    exit
-  end
-end.parse!
-
 if ARGV.empty?
-  abort("Usage: ruby tools/lighterpack_sync.rb [--inline] PACK_ID_OR_URL [OUTPUT_PATH]")
+  abort("Usage: ruby tools/lighterpack_sync.rb PACK_ID_OR_URL [OUTPUT_PATH]")
 end
 
-LighterpackSync.new(ARGV[0], ARGV[1], inline: options[:inline]).run
+LighterpackSync.new(ARGV[0], ARGV[1]).run
