@@ -10,18 +10,19 @@ tags: [trail-running, gear, Wutai]
 
 原始页面：[LighterPack - TITLE](https://lighterpack.com/r/PACK_ID)
 
-> 下面这块不走第三方 script。数据先抓到仓库里的 `_data/lighterpack/PACK_ID.yml`，再由本地模板渲染成静态 HTML，所以部署后仍然是纯静态页面，但版式会尽量贴近 LighterPack。
+> 下面这块不走第三方 script。数据先抓到仓库里的 `_data/lighterpack/PACK_ID.yml`，再由本地模板渲染成静态 HTML，所以部署后仍然是纯静态页面，但版式会尽量贴近 LighterPack。装备信息统一维护在 `_data/gear.yml`，各活动通过引用复用。
 
 {% include lighterpack.html id="PACK_ID" show_title="false" %}
-
-如果后面要同步新版清单，直接执行：`ruby tools/lighterpack_sync.rb https://lighterpack.com/r/PACK_ID`。省略 output 时，会默认写到 `_data/lighterpack/PACK_ID.yml`。
 
 ---
 
 使用步骤：
 
 1. 先在 LighterPack 建好新清单，拿到分享链接，例如 `https://lighterpack.com/r/abc123`。
-2. 执行：`ruby tools/lighterpack_sync.rb https://lighterpack.com/r/abc123`。这会默认生成 `_data/lighterpack/abc123.yml`。
+2. 执行：`ruby tools/lighterpack_sync.rb https://lighterpack.com/r/abc123`。这会：
+   - 自动把新装备追加到 `_data/gear.yml`（已有装备按名称匹配复用）。
+   - 生成引用格式的 `_data/lighterpack/abc123.yml`。
 3. 复制这份模板到 `_posts/YYYY-MM-DD-your-slug.md`，把标题、日期、permalink、tags 和 `PACK_ID` 替换掉。
+4. 如果需要旧的自包含格式，加 `--inline` 参数：`ruby tools/lighterpack_sync.rb --inline https://lighterpack.com/r/abc123`。
 
-如果和旧比赛有重复装备，不需要在仓库里做额外去重。LighterPack 那边怎么组织这次清单，这里就按这次快照渲染；不同比赛各自对应一个 YAML 文件。
+装备在不同活动中共享，可以在 [Gear](/gear/) 页面查看每件装备的使用记录。

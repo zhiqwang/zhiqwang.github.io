@@ -24,95 +24,25 @@ categories:
     display: 1.56 kg
   item_count: 11
   items:
-  - name: Run Vest AIR 13
-    description: FUGA AIR13; 高频口哨
-    weight:
-      mg: 230000
-      grams: 230.0
-      value: '230'
-      unit: g
-      display: 230 g
+  - gear: fuga-air13
     quantity: 1
-  - name: Soft Flask
-    description: FUGA
-    weight:
-      mg: 38000
-      grams: 38.0
-      value: '38'
-      unit: g
-      display: 38 g
+  - gear: fuga-soft-flask
     quantity: 2
-  - name: AERO light2.0
-    description: FUGA light2.0
-    weight:
-      mg: 135000
-      grams: 135.0
-      value: '135'
-      unit: g
-      display: 135 g
+  - gear: fuga-aero-light2
     quantity: 1
-  - name: EX330
-    description: FUGA
-    weight:
-      mg: 570000
-      grams: 570.0
-      value: '570'
-      unit: g
-      display: 570 g
+  - gear: fuga-ex330
     quantity: 1
-  - name: Running Top
-    description: FUGA Crew-neck Top
-    weight:
-      mg: 180000
-      grams: 180.0
-      value: '180'
-      unit: g
-      display: 180 g
+  - gear: fuga-running-top
     quantity: 1
-  - name: Space Blanket
-    description: ''
-    weight:
-      mg: 55000
-      grams: 55.0
-      value: '55'
-      unit: g
-      display: 55 g
+  - gear: space-blanket
     quantity: 1
-  - name: Short Tights
-    description: Outopia Men's Soul Run Short Tights 2.5L
-    weight:
-      mg: 155000
-      grams: 155.0
-      value: '155'
-      unit: g
-      display: 155 g
+  - gear: outopia-short-tights
     quantity: 1
-  - name: Running Cap
-    description: Outopia Unisex's Wild Hat Running Cap
-    weight:
-      mg: 45000
-      grams: 45.0
-      value: '45'
-      unit: g
-      display: 45 g
+  - gear: outopia-running-cap
     quantity: 1
-  - name: Mini Crew Toesocks
-    description: Injinji Run Lightweight Mini Crew Unisex Toesocks
-    weight:
-      mg: 42000
-      grams: 42.0
-      value: '42'
-      unit: g
-      display: 42 g
+  - gear: injinji-mini-crew-toesocks
     quantity: 1
-  - name: Race Belt 5.0
-    description: Ultimate Direction
-    weight:
-      mg: 71000
-      grams: 71.0
-      value: '71'
-      unit: g
-      display: 71 g
+  - gear: ud-race-belt-5
     quantity: 1
 - id: '47'
   name: Eat
@@ -125,41 +55,13 @@ categories:
     display: 1.11 kg
   item_count: 24
   items:
-  - name: Deeplant
-    description: 电解质液
-    weight:
-      mg: 27000
-      grams: 27.0
-      value: '27'
-      unit: g
-      display: 27 g
+  - gear: deeplant-electrolyte
     quantity: 12
-  - name: Go Isotonic
-    description: Sis 等渗
-    weight:
-      mg: 66000
-      grams: 66.0
-      value: '66'
-      unit: g
-      display: 66 g
+  - gear: sis-go-isotonic
     quantity: 4
-  - name: Beta Fuel
-    description: Sis 黑胶
-    weight:
-      mg: 66000
-      grams: 66.0
-      value: '66'
-      unit: g
-      display: 66 g
+  - gear: sis-beta-fuel
     quantity: 7
-  - name: Energy Cruiser
-    description: 迈胜黑胶
-    weight:
-      mg: 60000
-      grams: 60.0
-      value: '60'
-      unit: g
-      display: 60 g
+  - gear: maisheng-energy-cruiser
     quantity: 1
 - id: '51'
   name: Device
@@ -172,57 +74,15 @@ categories:
     display: 0.81 kg
   item_count: 7
   items:
-  - name: mate70
-    description: Huawei
-    weight:
-      mg: 203000
-      grams: 203.0
-      value: '203'
-      unit: g
-      display: 203 g
+  - gear: huawei-mate70
     quantity: 1
-  - name: vertix 2s
-    description: coros
-    weight:
-      mg: 87000
-      grams: 87.0
-      value: '87'
-      unit: g
-      display: 87 g
+  - gear: coros-vertix-2s
     quantity: 1
-  - name: HL18R
-    description: FENIX HL18R-T v2.0
-    weight:
-      mg: 91000
-      grams: 91.0
-      value: '91'
-      unit: g
-      display: 91 g
+  - gear: fenix-hl18r
     quantity: 1
-  - name: nb10000
-    description: NITCORE NB10000 Gen2; USB line
-    weight:
-      mg: 150000
-      grams: 150.0
-      value: '150'
-      unit: g
-      display: 150 g
+  - gear: nitecore-nb10000
     quantity: 1
-  - name: Z1902
-    description: ZENONE 120cm
-    weight:
-      mg: 113000
-      grams: 113.0
-      value: '113'
-      unit: g
-      display: 113 g
+  - gear: zenone-z1902
     quantity: 2
-  - name: FreeClip2
-    description: Huawei
-    weight:
-      mg: 48000
-      grams: 48.0
-      value: '48'
-      unit: g
-      display: 48 g
+  - gear: huawei-freeclip2
     quantity: 1

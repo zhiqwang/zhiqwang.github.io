@@ -10,21 +10,25 @@ require "yaml"
 
 class LighterpackSync
   DEFAULT_OUTPUT_DIR = File.expand_path("../_data/lighterpack", __dir__)
+  DEFAULT_GEAR_PATH  = File.expand_path("../_data/gear.yml", __dir__)
 
-  def initialize(pack_ref, output_path = nil)
+  def initialize(pack_ref, output_path = nil, inline: false)
     @pack_id = normalize_pack_id(pack_ref)
     @source_url = URI("https://lighterpack.com/r/#{@pack_id}")
     @output_path = output_path || File.join(DEFAULT_OUTPUT_DIR, "#{@pack_id}.yml")
+    @inline = inline
+    @gear_path = DEFAULT_GEAR_PATH
   end
 
   def run
     html = fetch_html
     pack = parse_pack(html)
-    FileUtils.mkdir_p(File.dirname(@output_path))
-    File.open(@output_path, "w:UTF-8") do |file|
-      file.write(YAML.dump(pack))
+
+    if @inline
+      write_inline(pack)
+    else
+      write_with_gear_catalog(pack)
     end
-    puts "Wrote #{@output_path}"
   end
 
   private
@@ -242,10 +246,136 @@ class LighterpackSync
   def format_percent(number)
     format("%.2f", number).sub(/\.0+\z/, "").sub(/(\.\d*[1-9])0+\z/, '\\1')
   end
+
+  # --- Inline mode (legacy): writes a single self-contained YAML ----------
+
+  def write_inline(pack)
+    FileUtils.mkdir_p(File.dirname(@output_path))
+    File.open(@output_path, "w:UTF-8") do |file|
+      file.write(YAML.dump(pack))
+    end
+    puts "Wrote #{@output_path} (inline mode)"
+  end
+
+  # --- Gear-catalog mode: updates _data/gear.yml and writes ref-based pack -
+
+  def write_with_gear_catalog(pack)
+    gear_catalog = load_gear_catalog
+    ref_pack = deep_dup(pack)
+
+    ref_pack["categories"].each do |category|
+      category["items"] = category["items"].map do |item|
+        slug = find_or_create_gear(gear_catalog, item, category["name"])
+        ref_item = { "gear" => slug, "quantity" => item["quantity"] }
+        ref_item["worn"] = true if item["worn"]
+        ref_item["consumable"] = true if item["consumable"]
+        ref_item["star"] = true if item["star"]
+        ref_item
+      end
+    end
+
+    save_gear_catalog(gear_catalog)
+    FileUtils.mkdir_p(File.dirname(@output_path))
+    File.open(@output_path, "w:UTF-8") do |file|
+      file.write(YAML.dump(ref_pack))
+    end
+
+    puts "Wrote #{@gear_path}"
+    puts "Wrote #{@output_path}"
+  end
+
+  def load_gear_catalog
+    return {} unless File.exist?(@gear_path)
+
+    YAML.safe_load(File.read(@gear_path, encoding: "UTF-8")) || {}
+  end
+
+  def save_gear_catalog(catalog)
+    FileUtils.mkdir_p(File.dirname(@gear_path))
+    File.open(@gear_path, "w:UTF-8") do |file|
+      file.write(YAML.dump(catalog))
+    end
+  end
+
+  def find_or_create_gear(catalog, item, category_name)
+    name = item["name"]
+    description = item["description"].to_s
+
+    # Try to find existing entry by name match
+    existing = catalog.find { |_slug, entry| entry["name"] == name }
+    return existing[0] if existing
+
+    # Create new entry
+    slug = generate_slug(name, description)
+    slug = deduplicate_slug(catalog, slug)
+
+    entry = { "name" => name, "weight_mg" => item.dig("weight", "mg"), "description" => description }
+
+    brand = extract_brand(description, name)
+    entry["brand"] = brand if brand
+
+    entry["category_hint"] = category_name
+
+    catalog[slug] = entry
+    slug
+  end
+
+  def generate_slug(name, description)
+    brand = extract_brand(description, name)
+    base = brand ? "#{brand}-#{name}" : name
+    base.downcase
+      .gsub(/[^a-z0-9\s-]/, "")
+      .gsub(/\s+/, "-")
+      .gsub(/-+/, "-")
+      .gsub(/\A-|-\z/, "")
+      .slice(0, 60)
+  end
+
+  def extract_brand(description, _name)
+    # Try to pick a brand from the first word of description if it looks like one
+    return nil if description.nil? || description.empty?
+
+    first_token = description.split(/[\s;,]/).first
+    return nil unless first_token && first_token.match?(/\A[A-Za-z]/)
+
+    first_token
+  end
+
+  def deduplicate_slug(catalog, slug)
+    return slug unless catalog.key?(slug)
+
+    counter = 2
+    loop do
+      candidate = "#{slug}-#{counter}"
+      return candidate unless catalog.key?(candidate)
+
+      counter += 1
+    end
+  end
+
+  def deep_dup(obj)
+    Marshal.load(Marshal.dump(obj))
+  end
 end
+
+require "optparse"
+
+options = { inline: false }
+OptionParser.new do |opts|
+  opts.banner = "Usage: ruby tools/lighterpack_sync.rb [options] PACK_ID_OR_URL [OUTPUT_PATH]"
+
+  opts.on("--inline", "Write self-contained YAML without gear catalog (legacy mode)") do
+    options[:inline] = true
+  end
+
+  opts.on("-h", "--help", "Print this help") do
+    puts opts
+    exit
+  end
+end.parse!
 
 if ARGV.empty?
-  abort("Usage: ruby tools/lighterpack_sync.rb PACK_ID_OR_URL [OUTPUT_PATH]")
+  abort("Usage: ruby tools/lighterpack_sync.rb [--inline] PACK_ID_OR_URL [OUTPUT_PATH]")
 end
 
-LighterpackSync.new(ARGV[0], ARGV[1]).run
+LighterpackSync.new(ARGV[0], ARGV[1], inline: options[:inline]).run
