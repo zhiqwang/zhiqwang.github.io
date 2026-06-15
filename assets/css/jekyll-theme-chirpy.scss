@@ -374,11 +374,9 @@ pre,
     text-align: right;
   }
 
-  .lighterpack-items-header {
-    .lighterpack-col-weight,
-    .lighterpack-col-qty {
-      display: none;
-    }
+  .lighterpack-items-header .lighterpack-col-weight,
+  .lighterpack-items-header .lighterpack-col-qty {
+    display: none;
   }
 
   .lighterpack-items-footer .lighterpack-subtotal-qty {
