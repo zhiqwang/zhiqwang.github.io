@@ -69,14 +69,14 @@
         {% for item in category.items %}
         <li class="lighterpack-item{% if item.worn %} lighterpack-item-worn{% endif %}{% if item.consumable %} lighterpack-item-consumable{% endif %}{% if item.star %} lighterpack-item-star{% endif %}">
           <span class="lighterpack-item-name">{{ item.name }}</span>
-          <span class="lighterpack-item-description">{{ item.description }}</span>
+          {% if item.description != '' %}<span class="lighterpack-item-description">{{ item.description }}</span>{% endif %}
           <span class="lighterpack-item-actions">
             {% if item.worn %}<i class="lighterpack-icon lighterpack-icon-worn" title="Worn weight">👕</i>{% endif %}
             {% if item.consumable %}<i class="lighterpack-icon lighterpack-icon-consumable" title="Consumable">💧</i>{% endif %}
             {% if item.star %}<i class="lighterpack-icon lighterpack-icon-star" title="Starred">⭐</i>{% endif %}
           </span>
           <span class="lighterpack-item-weight">{{ item.weight.display }}</span>
-          <span class="lighterpack-item-qty">{{ item.quantity }}</span>
+          <span class="lighterpack-item-qty" data-qty="{{ item.quantity }}">{{ item.quantity }}</span>
         </li>
         {% endfor %}
 
