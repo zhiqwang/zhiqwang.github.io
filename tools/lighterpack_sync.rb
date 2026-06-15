@@ -150,12 +150,20 @@ class LighterpackSync
     mg = extract_required(block, /<input type="hidden" class="lpMG" value="(\d+)"/, "item mg").to_i
     quantity = extract_required(block, %r{<span class="lpQtyCell lpNumber"[^>]*>\s*(.*?)\s*</span>}m, "item quantity").to_i
 
-    {
+    worn = block.include?("lpWorn lpActive") || block.include?("lpWorn\" lpActive")
+    consumable = block.include?("lpConsumable lpActive") || block.include?("lpConsumable\" lpActive")
+    star = block.match?(/lpStar[123]/)
+
+    item = {
       "name" => name,
       "description" => description,
       "weight" => weight_hash(mg, value, unit),
       "quantity" => quantity
     }
+    item["worn"] = true if worn
+    item["consumable"] = true if consumable
+    item["star"] = true if star
+    item
   end
 
   def parse_total(html, categories)
