@@ -1,6 +1,6 @@
 ---
 layout: page
-icon: fas fa-backpack
+icon: fas fa-person-hiking
 order: 6
 title: Gear
 ---
