@@ -28,9 +28,9 @@
           <span class="lighterpack-totals-cell">Weight</span>
         </li>
         {% for category in pack.categories %}
-        <li class="lighterpack-totals-row" data-category-id="{{ category.id }}">
+        <li class="lighterpack-totals-row" data-category-id="{{ category.id }}" style="--lighterpack-category-color: var(--lighterpack-chart-color-{{ forloop.index }}, {{ category.color }});">
           <span class="lighterpack-totals-cell lighterpack-totals-legend-cell">
-            <span class="lighterpack-legend" style="background-color: {{ category.color }};"></span>
+            <span class="lighterpack-legend"></span>
           </span>
           <span class="lighterpack-totals-cell">{{ category.name }}</span>
           <span class="lighterpack-totals-cell lighterpack-number">{{ category.weight.display }}</span>
@@ -169,6 +169,11 @@
     return colors[index % colors.length];
   }
 
+  function paletteColor(index, fallback) {
+    var themed = parseColor(cssVar("--lighterpack-chart-color-" + String(index + 1), ""));
+    return themed || fallback;
+  }
+
   function rgbToHsv(color) {
     var r = color.r / 255;
     var g = color.g / 255;
@@ -261,7 +266,8 @@
 
     tree.children = (data.categories || []).map(function (category, index) {
       var value = Number(category.mg) || 0;
-      var color = parseColor(category.color) || baseColor(index);
+      var sourceColor = parseColor(category.color) || baseColor(index);
+      var color = paletteColor(index, sourceColor);
       var node = {
         id: String(category.id),
         name: category.name,
@@ -294,7 +300,14 @@
     return tree;
   }
 
-  var chart = buildTree(raw);
+  var chart = null;
+
+  function resetChart() {
+    chart = buildTree(raw);
+    openCategory = null;
+    hovered = null;
+    drawnSegments = [];
+  }
 
   function radiiFor(level, count) {
     var outer = (1 / count * 0.3 + 0.7 * ((level + 1) / count - 0.1)) * radius;
@@ -448,10 +461,31 @@
 
   if (window.MutationObserver) {
     new MutationObserver(function () {
+      resetChart();
+      setTableHover(null);
+      tooltip.style.display = "none";
       redraw(null);
     }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-mode"] });
   }
 
+  if (window.matchMedia) {
+    var darkModeQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    var handleDarkModeChange = function () {
+      if (document.documentElement.getAttribute("data-mode")) return;
+      resetChart();
+      setTableHover(null);
+      tooltip.style.display = "none";
+      redraw(null);
+    };
+
+    if (darkModeQuery.addEventListener) {
+      darkModeQuery.addEventListener("change", handleDarkModeChange);
+    } else if (darkModeQuery.addListener) {
+      darkModeQuery.addListener(handleDarkModeChange);
+    }
+  }
+
+  resetChart();
   redraw(null);
 })();
 </script>

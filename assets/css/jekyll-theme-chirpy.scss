@@ -82,6 +82,12 @@ pre,
   --lighterpack-tooltip-shadow: rgba(0, 0, 0, 0.5);
   --lighterpack-chart-stroke: rgb(21, 26, 33);
   --lighterpack-chart-highlight-stroke: #d8dee9;
+  --lighterpack-chart-color-1: rgb(86, 145, 202);
+  --lighterpack-chart-color-2: rgb(203, 158, 82);
+  --lighterpack-chart-color-3: rgb(119, 164, 96);
+  --lighterpack-chart-color-4: rgb(190, 116, 127);
+  --lighterpack-chart-color-5: rgb(154, 133, 203);
+  --lighterpack-chart-color-6: rgb(205, 132, 84);
 }
 
 html[data-mode=dark] .lighterpack-embed {
@@ -240,6 +246,7 @@ html[data-mode=dark] .lighterpack-embed {
   width: 10px;
   height: 10px;
   border: 1px solid var(--lighterpack-legend-border);
+  background-color: var(--lighterpack-category-color, #cbd5e1);
 }
 
 /* ── Category items (LP flex layout) ── */
