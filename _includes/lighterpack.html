@@ -16,13 +16,8 @@
 
   <div class="lighterpack-summary">
     <div class="lighterpack-chart-shell">
-      <div class="lighterpack-chart" style="--lp-chart: conic-gradient({{ pack.chart_css }});">
-        <div class="lighterpack-chart-center">
-          <span class="lighterpack-total-label">Total</span>
-          <strong class="lighterpack-total-value">{{ pack.total.display }}</strong>
-          <span class="lighterpack-total-items">{{ pack.total.item_count }} items</span>
-        </div>
-      </div>
+      <canvas class="lighterpack-chart" width="260" height="260" aria-label="LighterPack weight chart"></canvas>
+      <div class="lighterpack-chart-tooltip" role="tooltip"></div>
     </div>
 
     <div class="lighterpack-summary-table-wrap">
@@ -33,7 +28,7 @@
           <span class="lighterpack-totals-cell">Weight</span>
         </li>
         {% for category in pack.categories %}
-        <li class="lighterpack-totals-row">
+        <li class="lighterpack-totals-row" data-category-id="{{ category.id }}">
           <span class="lighterpack-totals-cell lighterpack-totals-legend-cell">
             <span class="lighterpack-legend" style="background-color: {{ category.color }};"></span>
           </span>
@@ -49,6 +44,37 @@
       </ul>
     </div>
   </div>
+
+  <script type="application/json" class="lighterpack-chart-data">
+    {
+      "totalMg": {{ pack.total.mg | default: 0 }},
+      "categories": [
+        {% for category in pack.categories %}
+        {
+          "id": {{ category.id | jsonify }},
+          "name": {{ category.name | jsonify }},
+          "display": {{ category.weight.display | jsonify }},
+          "mg": {{ category.weight.mg | default: 0 }},
+          "color": {{ category.color | jsonify }},
+          "items": [
+            {% for item in category.items %}
+            {% assign gear_entry = site.data.gear[item.gear] %}
+            {% assign resolved_name = item.name | default: gear_entry.name | default: item.gear %}
+            {% assign item_quantity = item.quantity | default: 1 %}
+            {% assign unit_weight_mg = item.weight.mg | default: gear_entry.weight_mg | default: 0 %}
+            {
+              "id": {{ item.gear | default: forloop.index | jsonify }},
+              "name": {{ resolved_name | jsonify }},
+              "unitMg": {{ unit_weight_mg }},
+              "quantity": {{ item_quantity }}
+            }{% unless forloop.last %},{% endunless %}
+            {% endfor %}
+          ]
+        }{% unless forloop.last %},{% endunless %}
+        {% endfor %}
+      ]
+    }
+  </script>
 
   <div class="lighterpack-categories">
     {% for category in pack.categories %}
@@ -98,6 +124,326 @@
     {% endfor %}
   </div>
 </div>
+
+<script>
+(function () {
+  var root = document.getElementById("lighterpack-{{ include.id }}");
+  if (!root || root.dataset.lighterpackReady === "true") return;
+  root.dataset.lighterpackReady = "true";
+
+  var canvas = root.querySelector(".lighterpack-chart");
+  var dataNode = root.querySelector(".lighterpack-chart-data");
+  var tooltip = root.querySelector(".lighterpack-chart-tooltip");
+  if (!canvas || !dataNode || !tooltip || !canvas.getContext) return;
+
+  var raw;
+  try {
+    raw = JSON.parse(dataNode.textContent);
+  } catch (error) {
+    return;
+  }
+
+  var ctx = canvas.getContext("2d");
+  var size = { x: canvas.width, y: canvas.height };
+  var center = { x: size.x / 2, y: size.y / 2 };
+  var radius = Math.min(center.x, center.y);
+  var openCategory = null;
+  var hovered = null;
+  var drawnSegments = [];
+
+  function parseColor(value) {
+    var match = String(value || "").match(/(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+    if (!match) return null;
+    return { r: Number(match[1]), g: Number(match[2]), b: Number(match[3]) };
+  }
+
+  function baseColor(index) {
+    var colors = [
+      { r: 27, g: 119, b: 211 },
+      { r: 206, g: 24, b: 54 },
+      { r: 242, g: 208, b: 0 },
+      { r: 122, g: 179, b: 23 },
+      { r: 130, g: 33, b: 198 },
+      { r: 232, g: 110, b: 28 }
+    ];
+    return colors[index % colors.length];
+  }
+
+  function rgbToHsv(color) {
+    var r = color.r / 255;
+    var g = color.g / 255;
+    var b = color.b / 255;
+    var max = Math.max(r, g, b);
+    var min = Math.min(r, g, b);
+    var delta = max - min;
+    var h = 0;
+    var s = max === 0 ? 0 : delta / max;
+    if (delta !== 0) {
+      if (max === r) h = (g - b) / delta + (g < b ? 6 : 0);
+      if (max === g) h = (b - r) / delta + 2;
+      if (max === b) h = (r - g) / delta + 4;
+      h /= 6;
+    }
+    return { h: Math.round(h * 360), s: Math.round(s * 100), v: Math.round(max * 100) };
+  }
+
+  function hsvToRgb(color) {
+    var h = color.h / 360;
+    var s = color.s / 100;
+    var v = color.v / 100;
+    var sector = Math.floor(h * 6);
+    var fraction = h * 6 - sector;
+    var p = v * (1 - s);
+    var q = v * (1 - fraction * s);
+    var t = v * (1 - (1 - fraction) * s);
+    var r = 0;
+    var g = 0;
+    var b = 0;
+
+    switch (sector % 6) {
+      case 0:
+        r = v; g = t; b = p;
+        break;
+      case 1:
+        r = q; g = v; b = p;
+        break;
+      case 2:
+        r = p; g = v; b = t;
+        break;
+      case 3:
+        r = p; g = q; b = v;
+        break;
+      case 4:
+        r = t; g = p; b = v;
+        break;
+      case 5:
+        r = v; g = p; b = q;
+        break;
+    }
+
+    return {
+      r: Math.floor(r * 255),
+      g: Math.floor(g * 255),
+      b: Math.floor(b * 255)
+    };
+  }
+
+  function childColor(index, parentColor) {
+    if (!parentColor) return baseColor(index);
+    var hsv = rgbToHsv(parentColor);
+    var step = index % 10;
+    hsv.s = Math.max(0, hsv.s - Math.round((hsv.s / 10) * step));
+    hsv.v = Math.min(100, hsv.v + Math.round(((100 - hsv.v) / 10) * step));
+    return hsvToRgb(hsv);
+  }
+
+  function colorString(color) {
+    return "rgb(" + color.r + "," + color.g + "," + color.b + ")";
+  }
+
+  function formatWeight(mg) {
+    if (mg >= 1000000) return String(Math.round((mg / 1000000) * 100) / 100) + " kg";
+    return String(Math.round((mg / 1000) * 100) / 100) + " g";
+  }
+
+  function formatPercent(value) {
+    return String(Math.round(value * 10000) / 100) + "%";
+  }
+
+  function buildTree(data) {
+    var total = Number(data.totalMg) || 0;
+    var tree = { id: "total", name: "Total", value: total, children: [] };
+
+    tree.children = (data.categories || []).map(function (category, index) {
+      var value = Number(category.mg) || 0;
+      var color = parseColor(category.color) || baseColor(index);
+      var node = {
+        id: String(category.id),
+        name: category.name,
+        label: category.name + ": " + category.display,
+        value: value,
+        percent: total ? value / total : 0,
+        color: color,
+        parent: tree,
+        children: []
+      };
+
+      node.children = (category.items || []).map(function (item, itemIndex) {
+        var quantity = Number(item.quantity) || 1;
+        var itemValue = (Number(item.unitMg) || 0) * quantity;
+        return {
+          id: String(item.id),
+          name: item.name,
+          label: item.name + ": " + formatWeight(itemValue) + (quantity > 1 ? " x " + quantity : ""),
+          value: itemValue,
+          percent: value ? itemValue / value : 0,
+          color: childColor(itemIndex, color),
+          parent: node,
+          children: []
+        };
+      });
+
+      return node;
+    });
+
+    return tree;
+  }
+
+  var chart = buildTree(raw);
+
+  function radiiFor(level, count) {
+    var outer = (1 / count * 0.3 + 0.7 * ((level + 1) / count - 0.1)) * radius;
+    if (count === 1) outer *= 0.8;
+    return {
+      inner: (1 / count * 0.3 + level / count * 0.7) * radius,
+      outer: outer
+    };
+  }
+
+  function drawSegment(segment, strokeColor) {
+    ctx.strokeStyle = strokeColor || "rgb(245,245,245)";
+    ctx.lineWidth = strokeColor ? 2 : 3;
+    ctx.fillStyle = colorString(segment.color);
+    ctx.beginPath();
+    ctx.arc(center.x, center.y, segment.outerRadius, segment.startAngle, segment.endAngle);
+    ctx.arc(center.x, center.y, segment.innerRadius, segment.endAngle, segment.startAngle, true);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.fill();
+  }
+
+  function drawLevel(parent, level, count, startAngle) {
+    var radii = radiiFor(level, count);
+    var angle = startAngle || 0;
+    parent.children.forEach(function (segment) {
+      var span = segment.percent * Math.PI * 2;
+      segment.startAngle = angle;
+      segment.endAngle = angle + span;
+      segment.innerRadius = radii.inner;
+      segment.outerRadius = radii.outer;
+      drawnSegments.push(segment);
+      drawSegment(segment);
+      angle += span;
+    });
+  }
+
+  function redraw(highlight) {
+    var levels = openCategory ? [chart, openCategory] : [chart];
+    drawnSegments = [];
+    ctx.clearRect(0, 0, size.x, size.y);
+    drawLevel(chart, 0, levels.length, 0);
+    if (openCategory) drawLevel(openCategory, 1, levels.length, openCategory.startAngle || 0);
+    if (highlight) drawSegment(highlight, "rgb(50,50,50)");
+  }
+
+  function containsAngle(angle, start, end) {
+    var full = Math.PI * 2;
+    while (angle < start) angle += full;
+    return angle > start && angle < end;
+  }
+
+  function segmentAt(event) {
+    var rect = canvas.getBoundingClientRect();
+    var x = (event.clientX - rect.left) * (canvas.width / rect.width);
+    var y = (event.clientY - rect.top) * (canvas.height / rect.height);
+    var dx = x - center.x;
+    var dy = y - center.y;
+    var distance = Math.sqrt(dx * dx + dy * dy);
+    var angle = Math.atan2(dy, dx);
+    if (angle < 0) angle += Math.PI * 2;
+
+    for (var index = drawnSegments.length - 1; index >= 0; index -= 1) {
+      var segment = drawnSegments[index];
+      if (distance > segment.innerRadius && distance < segment.outerRadius && containsAngle(angle, segment.startAngle, segment.endAngle)) {
+        return segment;
+      }
+    }
+
+    return null;
+  }
+
+  function setTableHover(segment) {
+    root.querySelectorAll(".lighterpack-totals-row").forEach(function (row) {
+      row.classList.remove("lighterpack-hover");
+    });
+    if (!segment) return;
+    var category = segment.parent === chart ? segment : segment.parent;
+    var row = root.querySelector('.lighterpack-totals-row[data-category-id="' + category.id + '"]');
+    if (row) row.classList.add("lighterpack-hover");
+  }
+
+  function showTooltip(segment, event) {
+    var percentBase = segment.parent && segment.parent.value ? segment.parent.value : chart.value;
+    tooltip.textContent = "";
+    var label = document.createElement("strong");
+    var percent = document.createElement("span");
+    label.textContent = segment.label;
+    percent.textContent = formatPercent(segment.value / percentBase);
+    tooltip.appendChild(label);
+    tooltip.appendChild(percent);
+    tooltip.style.display = "block";
+    var shellRect = root.querySelector(".lighterpack-chart-shell").getBoundingClientRect();
+    tooltip.style.left = String(event.clientX - shellRect.left + 15) + "px";
+    tooltip.style.top = String(event.clientY - shellRect.top - 10) + "px";
+  }
+
+  function clearHover() {
+    hovered = null;
+    canvas.classList.remove("active-hover");
+    tooltip.style.display = "none";
+    setTableHover(null);
+    redraw(null);
+  }
+
+  canvas.addEventListener("mousemove", function (event) {
+    var segment = segmentAt(event);
+    if (!segment) {
+      if (hovered) clearHover();
+      return;
+    }
+
+    hovered = segment;
+    canvas.classList.add("active-hover");
+    redraw(segment);
+    setTableHover(segment);
+    showTooltip(segment, event);
+  });
+
+  canvas.addEventListener("mouseleave", clearHover);
+
+  canvas.addEventListener("click", function (event) {
+    var segment = segmentAt(event);
+    if (segment && segment.children && segment.children.length) {
+      openCategory = segment;
+    } else if (!segment) {
+      openCategory = null;
+    }
+    hovered = null;
+    tooltip.style.display = "none";
+    setTableHover(null);
+    redraw(null);
+  });
+
+  root.querySelectorAll(".lighterpack-totals-row").forEach(function (row) {
+    row.addEventListener("mouseenter", function () {
+      var id = row.getAttribute("data-category-id");
+      var segment = chart.children.find(function (category) {
+        return category.id === id;
+      });
+      if (segment) {
+        row.classList.add("lighterpack-hover");
+        redraw(segment);
+      }
+    });
+    row.addEventListener("mouseleave", function () {
+      row.classList.remove("lighterpack-hover");
+      redraw(null);
+    });
+  });
+
+  redraw(null);
+})();
+</script>
 {% else %}
 <p>Missing LighterPack snapshot for {{ include.id }}.</p>
 {% endif %}
