@@ -241,6 +241,11 @@
     return "rgb(" + color.r + "," + color.g + "," + color.b + ")";
   }
 
+  function cssVar(name, fallback) {
+    var value = window.getComputedStyle(root).getPropertyValue(name).trim();
+    return value || fallback;
+  }
+
   function formatWeight(mg) {
     if (mg >= 1000000) return String(Math.round((mg / 1000000) * 100) / 100) + " kg";
     return String(Math.round((mg / 1000) * 100) / 100) + " g";
@@ -301,7 +306,7 @@
   }
 
   function drawSegment(segment, strokeColor) {
-    ctx.strokeStyle = strokeColor || "rgb(245,245,245)";
+    ctx.strokeStyle = strokeColor || cssVar("--lighterpack-chart-stroke", "rgb(245,245,245)");
     ctx.lineWidth = strokeColor ? 2 : 3;
     ctx.fillStyle = colorString(segment.color);
     ctx.beginPath();
@@ -333,7 +338,7 @@
     ctx.clearRect(0, 0, size.x, size.y);
     drawLevel(chart, 0, levels.length, 0);
     if (openCategory) drawLevel(openCategory, 1, levels.length, openCategory.startAngle || 0);
-    if (highlight) drawSegment(highlight, "rgb(50,50,50)");
+    if (highlight) drawSegment(highlight, cssVar("--lighterpack-chart-highlight-stroke", "rgb(50,50,50)"));
   }
 
   function containsAngle(angle, start, end) {
@@ -440,6 +445,12 @@
       redraw(null);
     });
   });
+
+  if (window.MutationObserver) {
+    new MutationObserver(function () {
+      redraw(null);
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-mode"] });
+  }
 
   redraw(null);
 })();

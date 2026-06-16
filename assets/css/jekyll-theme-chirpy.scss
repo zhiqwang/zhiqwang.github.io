@@ -33,24 +33,65 @@ pre,
 /* Font & base: matches LP _common.scss */
 .lighterpack-embed {
   --lighterpack-chart-size: 260px;
+  --lighterpack-bg: #f7f7f7;
+  --lighterpack-text: #282828;
+  --lighterpack-heading: #282828;
+  --lighterpack-muted: #666;
+  --lighterpack-link: #1b77d3;
+  --lighterpack-border: #aaa;
+  --lighterpack-legend-border: #fff;
+  --lighterpack-hover-bg: #fcefa9;
+  --lighterpack-tooltip-bg: #444;
+  --lighterpack-tooltip-border: #fff;
+  --lighterpack-tooltip-text: #fff;
+  --lighterpack-tooltip-shadow: rgba(0, 0, 0, 0.25);
+  --lighterpack-chart-stroke: rgb(245, 245, 245);
+  --lighterpack-chart-highlight-stroke: rgb(50, 50, 50);
 
   margin: 2rem 0;
   padding: 0 20px;
   border: none;
   border-radius: 0;
-  background: #f7f7f7;
+  background: var(--lighterpack-bg);
   box-shadow: none;
   overflow: visible;
   font-family: 'Open Sans', sans-serif;
   font-size: 13px;
   line-height: 1.3;
-  color: #282828;
+  color: var(--lighterpack-text);
   box-sizing: border-box;
   container-type: inline-size;
 }
 
 .lighterpack-embed a {
-  color: #1b77d3;
+  color: var(--lighterpack-link);
+}
+
+@mixin lighterpack-dark-vars {
+  --lighterpack-bg: #151a21;
+  --lighterpack-text: #d8dee9;
+  --lighterpack-heading: #e6edf3;
+  --lighterpack-muted: #9aa4b2;
+  --lighterpack-link: #79b8ff;
+  --lighterpack-border: rgba(148, 163, 184, 0.28);
+  --lighterpack-legend-border: rgba(255, 255, 255, 0.72);
+  --lighterpack-hover-bg: rgba(121, 184, 255, 0.14);
+  --lighterpack-tooltip-bg: #0f141b;
+  --lighterpack-tooltip-border: rgba(148, 163, 184, 0.35);
+  --lighterpack-tooltip-text: #f1f5f9;
+  --lighterpack-tooltip-shadow: rgba(0, 0, 0, 0.5);
+  --lighterpack-chart-stroke: rgb(21, 26, 33);
+  --lighterpack-chart-highlight-stroke: #d8dee9;
+}
+
+html[data-mode=dark] .lighterpack-embed {
+  @include lighterpack-dark-vars;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-mode]) .lighterpack-embed {
+    @include lighterpack-dark-vars;
+  }
 }
 
 .lighterpack-embed *,
@@ -83,7 +124,7 @@ pre,
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-  color: #666;
+  color: var(--lighterpack-muted);
   font-size: 0.92rem;
 }
 
@@ -121,10 +162,10 @@ pre,
   display: none;
   max-width: 220px;
   padding: 3px;
-  border: 1px solid #fff;
-  background: #444;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.25);
-  color: #fff;
+  border: 1px solid var(--lighterpack-tooltip-border);
+  background: var(--lighterpack-tooltip-bg);
+  box-shadow: 0 0 5px var(--lighterpack-tooltip-shadow);
+  color: var(--lighterpack-tooltip-text);
   pointer-events: none;
   white-space: nowrap;
 }
@@ -156,7 +197,7 @@ pre,
 
 .lighterpack-totals-cell {
   display: table-cell;
-  border-top: 1px dotted #aaa;
+  border-top: 1px dotted var(--lighterpack-border);
   padding: 1px 8px;
   vertical-align: middle;
 }
@@ -171,7 +212,7 @@ pre,
 
 .lighterpack-totals-header .lighterpack-totals-cell {
   border-top: none;
-  border-bottom: 1px solid #aaa;
+  border-bottom: 1px solid var(--lighterpack-border);
   font-weight: 600;
   vertical-align: bottom;
 }
@@ -181,12 +222,12 @@ pre,
 }
 
 .lighterpack-totals-footer .lighterpack-totals-cell {
-  border-top: 1px solid #aaa;
+  border-top: 1px solid var(--lighterpack-border);
   font-weight: 600;
 }
 
 .lighterpack-totals-row.lighterpack-hover .lighterpack-totals-cell {
-  background: #fcefa9;
+  background: var(--lighterpack-hover-bg);
 }
 
 .lighterpack-totals-legend-cell {
@@ -198,7 +239,7 @@ pre,
   display: block;
   width: 10px;
   height: 10px;
-  border: 1px solid #fff;
+  border: 1px solid var(--lighterpack-legend-border);
 }
 
 /* ── Category items (LP flex layout) ── */
@@ -227,12 +268,12 @@ pre,
   display: flex;
   flex-direction: row;
   align-items: center;
-  border-top: 1px dotted #aaa;
+  border-top: 1px dotted var(--lighterpack-border);
 }
 
 .lighterpack-items-header {
   border-top: none;
-  border-bottom: 1px solid #aaa;
+  border-bottom: 1px solid var(--lighterpack-border);
   height: 31px;
   align-items: flex-end;
 }
@@ -251,13 +292,13 @@ pre,
 }
 
 .lighterpack-embed .lighterpack-category-name {
-  color: #282828;
+  color: var(--lighterpack-heading);
 }
 
 /* Header column labels: LP .lpHeader { text-align: center } */
 .lighterpack-col-weight,
 .lighterpack-col-qty {
-  color: #666;
+  color: var(--lighterpack-muted);
   font-size: 13px;
   text-align: center;
 }
@@ -281,7 +322,7 @@ pre,
   flex: 2 0 200px;
   min-width: 100px;
   margin-right: 4px;
-  color: #666;
+  color: var(--lighterpack-muted);
 }
 
 /* LP share: .lpActionsCell { flex-basis: 75px } */
