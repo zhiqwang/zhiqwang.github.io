@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="450" viewBox="0 0 860 450" role="img" aria-labelledby="title desc">
+  <title id="title">reduce many-to-one communication</title>
+  <desc id="desc">Every rank contributes a same-shaped tensor and only the root rank receives the reduced result.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: Inter, Arial, sans-serif; fill: #0f172a; }
+    .title { font-size: 22px; font-weight: 700; }
+    .label { font-size: 14px; fill: #475569; }
+    .step { font-size: 14px; font-weight: 700; fill: #334155; }
+    .rank { font-size: 14px; font-weight: 700; }
+    .part { font-size: 12px; font-weight: 700; text-anchor: middle; }
+    .formula { font-size: 12px; fill: #475569; text-anchor: middle; }
+    .box { fill: #f8fafc; stroke: #94a3b8; stroke-width: 1.5; rx: 8; }
+    .phase { fill: #f1f5f9; stroke: #94a3b8; stroke-width: 1.5; rx: 8; }
+    .arrow { fill: none; stroke: #64748b; stroke-width: 1.7; marker-end: url(#arrow); }
+    .line { fill: none; stroke: #64748b; stroke-width: 1.7; }
+    .p0 { fill: #dbeafe; stroke: #2563eb; stroke-width: 1.5; rx: 4; }
+    .p1 { fill: #dcfce7; stroke: #16a34a; stroke-width: 1.5; rx: 4; }
+    .sum { fill: #fee2e2; stroke: #dc2626; stroke-width: 1.5; rx: 4; }
+  </style>
+  <rect width="860" height="450" fill="#ffffff"/>
+
+  <text x="32" y="40" class="title">Many-to-One: reduce</text>
+  <text x="32" y="65" class="label">Same-shaped inputs are reduced element-wise; only root receives the result.</text>
+
+  <text x="45" y="104" class="step">Step 1: every rank contributes a tensor</text>
+  <g>
+    <rect x="45" y="118" width="240" height="52" class="box"/>
+    <text x="62" y="149" class="rank">rank 0 root</text>
+    <rect x="162" y="130" width="42" height="28" class="p0"/><text x="183" y="148" class="part">A0</text>
+    <rect x="208" y="130" width="42" height="28" class="p1"/><text x="229" y="148" class="part">A1</text>
+
+    <rect x="315" y="118" width="240" height="52" class="box"/>
+    <text x="332" y="149" class="rank">rank 1</text>
+    <rect x="432" y="130" width="42" height="28" class="p0"/><text x="453" y="148" class="part">B0</text>
+    <rect x="478" y="130" width="42" height="28" class="p1"/><text x="499" y="148" class="part">B1</text>
+
+    <rect x="585" y="118" width="240" height="52" class="box"/>
+    <text x="602" y="149" class="rank">rank 2</text>
+    <rect x="702" y="130" width="42" height="28" class="p0"/><text x="723" y="148" class="part">C0</text>
+    <rect x="748" y="130" width="42" height="28" class="p1"/><text x="769" y="148" class="part">C1</text>
+  </g>
+
+  <text x="45" y="214" class="step">Step 2: root receives the element-wise reduction</text>
+  <path d="M183 172 C245 190, 350 222, 430 258" class="line"/>
+  <path d="M453 172 C450 198, 442 232, 430 258" class="line"/>
+  <path d="M723 172 C640 190, 520 222, 430 258" class="line"/>
+  <path d="M430 258 C430 314, 430 324, 406 332 C345 342, 255 350, 195 354" class="arrow"/>
+  <path d="M430 258 C430 316, 430 326, 410 334 C360 344, 300 350, 249 354" class="arrow"/>
+  <rect x="290" y="226" width="280" height="64" class="phase"/>
+  <text x="430" y="250" class="label" text-anchor="middle">sum matching positions</text>
+  <text x="430" y="270" class="label" text-anchor="middle">out[i] = A[i] + B[i] + C[i]</text>
+
+  <text x="45" y="316" class="step">Step 3: only root owns the reduced output</text>
+  <g>
+    <rect x="45" y="346" width="390" height="78" class="box"/>
+    <text x="62" y="376" class="rank">rank 0 root</text>
+    <rect x="170" y="354" width="50" height="28" class="sum"/><text x="195" y="372" class="part">S0</text>
+    <rect x="224" y="354" width="50" height="28" class="sum"/><text x="249" y="372" class="part">S1</text>
+    <text x="302" y="393" class="formula">S0 = A0 + B0 + C0</text>
+    <text x="302" y="410" class="formula">S1 = A1 + B1 + C1</text>
+
+    <rect x="500" y="346" width="135" height="78" class="box"/>
+    <text x="520" y="376" class="rank">rank 1</text>
+    <text x="568" y="401" class="label" text-anchor="middle">no output</text>
+
+    <rect x="670" y="346" width="135" height="78" class="box"/>
+    <text x="690" y="376" class="rank">rank 2</text>
+    <text x="738" y="401" class="label" text-anchor="middle">no output</text>
+  </g>
+</svg>

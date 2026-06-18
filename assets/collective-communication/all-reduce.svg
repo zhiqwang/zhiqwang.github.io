@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="520" viewBox="0 0 860 520" role="img" aria-labelledby="title desc">
+  <title id="title">all reduce many-to-many communication</title>
+  <desc id="desc">All ranks reduce same-shaped input buffers and receive the same global reduced result; a common mental model is reduce-scatter followed by all-gather.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: Inter, Arial, sans-serif; fill: #0f172a; }
+    .title { font-size: 22px; font-weight: 700; }
+    .label { font-size: 14px; fill: #475569; }
+    .step { font-size: 14px; font-weight: 700; fill: #334155; }
+    .rank { font-size: 14px; font-weight: 700; }
+    .part { font-size: 11px; font-weight: 700; text-anchor: middle; }
+    .formula { font-size: 12px; fill: #475569; text-anchor: middle; }
+    .box { fill: #f8fafc; stroke: #94a3b8; stroke-width: 1.5; rx: 8; }
+    .phase { fill: #f1f5f9; stroke: #94a3b8; stroke-width: 1.5; rx: 8; }
+    .arrow { fill: none; stroke: #64748b; stroke-width: 1.8; }
+    .line { fill: none; stroke: #64748b; stroke-width: 1.8; }
+    .p0 { fill: #dbeafe; stroke: #2563eb; stroke-width: 1.5; rx: 4; }
+    .p1 { fill: #dcfce7; stroke: #16a34a; stroke-width: 1.5; rx: 4; }
+    .p2 { fill: #fef3c7; stroke: #d97706; stroke-width: 1.5; rx: 4; }
+    .sum { fill: #fee2e2; stroke: #dc2626; stroke-width: 1.5; rx: 4; }
+  </style>
+  <rect width="860" height="520" fill="#ffffff"/>
+
+  <text x="32" y="40" class="title">Many-to-Many: all_reduce</text>
+  <text x="32" y="65" class="label">Every rank contributes a same-shaped buffer and receives the same global reduction result.</text>
+
+  <text x="45" y="104" class="step">Step 1: local input buffers</text>
+  <g>
+    <rect x="45" y="118" width="220" height="58" class="box"/>
+    <text x="62" y="151" class="rank">rank 0</text>
+    <rect x="128" y="132" width="36" height="28" class="p0"/><text x="146" y="150" class="part">A0</text>
+    <rect x="168" y="132" width="36" height="28" class="p1"/><text x="186" y="150" class="part">A1</text>
+    <rect x="208" y="132" width="36" height="28" class="p2"/><text x="226" y="150" class="part">A2</text>
+
+    <rect x="320" y="118" width="220" height="58" class="box"/>
+    <text x="337" y="151" class="rank">rank 1</text>
+    <rect x="403" y="132" width="36" height="28" class="p0"/><text x="421" y="150" class="part">B0</text>
+    <rect x="443" y="132" width="36" height="28" class="p1"/><text x="461" y="150" class="part">B1</text>
+    <rect x="483" y="132" width="36" height="28" class="p2"/><text x="501" y="150" class="part">B2</text>
+
+    <rect x="595" y="118" width="220" height="58" class="box"/>
+    <text x="612" y="151" class="rank">rank 2</text>
+    <rect x="678" y="132" width="36" height="28" class="p0"/><text x="696" y="150" class="part">C0</text>
+    <rect x="718" y="132" width="36" height="28" class="p1"/><text x="736" y="150" class="part">C1</text>
+    <rect x="758" y="132" width="36" height="28" class="p2"/><text x="776" y="150" class="part">C2</text>
+  </g>
+
+  <path d="M155 178 C228 190, 340 208, 430 230" class="line"/>
+  <path d="M430 178 C430 198, 430 216, 430 230" class="line"/>
+  <path d="M705 178 C620 190, 516 208, 430 230" class="line"/>
+  <path d="M430 230 C388 278, 260 302, 159 311" class="arrow"/>
+  <path d="M430 230 C430 282, 430 302, 434 311" class="arrow"/>
+  <path d="M430 230 C472 278, 604 302, 709 311" class="arrow"/>
+  <rect x="250" y="198" width="360" height="64" class="phase"/>
+  <text x="430" y="221" class="label" text-anchor="middle">Phase A: reduce_scatter</text>
+  <text x="430" y="240" class="label" text-anchor="middle">sum matching segments</text>
+  <text x="430" y="258" class="label" text-anchor="middle">keep one reduced shard per rank</text>
+
+  <text x="45" y="285" class="step">Step 2: reduced shards after reduce_scatter</text>
+  <g>
+    <rect x="45" y="300" width="220" height="66" class="box"/>
+    <text x="62" y="330" class="rank">rank 0</text>
+    <rect x="138" y="311" width="42" height="28" class="sum"/><text x="159" y="329" class="part">S0</text>
+    <text x="159" y="354" class="formula">A0+B0+C0</text>
+
+    <rect x="320" y="300" width="220" height="66" class="box"/>
+    <text x="337" y="330" class="rank">rank 1</text>
+    <rect x="413" y="311" width="42" height="28" class="sum"/><text x="434" y="329" class="part">S1</text>
+    <text x="434" y="354" class="formula">A1+B1+C1</text>
+
+    <rect x="595" y="300" width="220" height="66" class="box"/>
+    <text x="612" y="330" class="rank">rank 2</text>
+    <rect x="688" y="311" width="42" height="28" class="sum"/><text x="709" y="329" class="part">S2</text>
+    <text x="709" y="354" class="formula">A2+B2+C2</text>
+  </g>
+
+  <path d="M159 368 C242 382, 342 396, 430 406" class="line"/>
+  <path d="M434 368 C434 384, 430 398, 430 406" class="line"/>
+  <path d="M709 368 C626 382, 518 396, 430 406" class="line"/>
+  <path d="M430 406 C430 444, 430 456, 410 460 C340 466, 250 466, 186 466" class="arrow"/>
+  <path d="M430 406 C430 444, 430 456, 461 466" class="arrow"/>
+  <path d="M430 406 C430 444, 430 456, 450 460 C520 466, 650 466, 736 466" class="arrow"/>
+  <rect x="300" y="382" width="260" height="48" class="phase"/>
+  <text x="430" y="405" class="label" text-anchor="middle">Phase B: all_gather</text>
+  <text x="430" y="424" class="label" text-anchor="middle">share reduced shards with all ranks</text>
+
+  <text x="45" y="455" class="step">Step 3: identical full reduced result</text>
+  <g>
+    <rect x="45" y="468" width="220" height="38" class="box"/>
+    <text x="62" y="492" class="rank">rank 0</text>
+    <rect x="128" y="476" width="36" height="22" class="sum"/><text x="146" y="491" class="part">S0</text>
+    <rect x="168" y="476" width="36" height="22" class="sum"/><text x="186" y="491" class="part">S1</text>
+    <rect x="208" y="476" width="36" height="22" class="sum"/><text x="226" y="491" class="part">S2</text>
+
+    <rect x="320" y="468" width="220" height="38" class="box"/>
+    <text x="337" y="492" class="rank">rank 1</text>
+    <rect x="403" y="476" width="36" height="22" class="sum"/><text x="421" y="491" class="part">S0</text>
+    <rect x="443" y="476" width="36" height="22" class="sum"/><text x="461" y="491" class="part">S1</text>
+    <rect x="483" y="476" width="36" height="22" class="sum"/><text x="501" y="491" class="part">S2</text>
+
+    <rect x="595" y="468" width="220" height="38" class="box"/>
+    <text x="612" y="492" class="rank">rank 2</text>
+    <rect x="678" y="476" width="36" height="22" class="sum"/><text x="696" y="491" class="part">S0</text>
+    <rect x="718" y="476" width="36" height="22" class="sum"/><text x="736" y="491" class="part">S1</text>
+    <rect x="758" y="476" width="36" height="22" class="sum"/><text x="776" y="491" class="part">S2</text>
+  </g>
+</svg>

@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="360" viewBox="0 0 820 360" role="img" aria-labelledby="title desc">
+  <title id="title">send recv point-to-point communication</title>
+  <desc id="desc">One source rank sends one tensor to one destination rank; the source keeps its local tensor and the destination receives a copy.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: Inter, Arial, sans-serif; fill: #0f172a; }
+    .title { font-size: 22px; font-weight: 700; }
+    .label { font-size: 14px; fill: #475569; }
+    .step { font-size: 14px; font-weight: 700; fill: #334155; }
+    .rank { font-size: 14px; font-weight: 700; }
+    .part { font-size: 12px; font-weight: 700; text-anchor: middle; }
+    .box { fill: #f8fafc; stroke: #94a3b8; stroke-width: 1.5; rx: 8; }
+    .phase { fill: #f1f5f9; stroke: #94a3b8; stroke-width: 1.5; rx: 8; }
+    .empty { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.5; stroke-dasharray: 5 4; rx: 4; }
+    .arrow { fill: none; stroke: #64748b; stroke-width: 1.8; marker-end: url(#arrow); }
+    .line { fill: none; stroke: #64748b; stroke-width: 1.8; }
+    .p0 { fill: #dbeafe; stroke: #2563eb; stroke-width: 1.5; rx: 4; }
+  </style>
+  <rect width="820" height="360" fill="#ffffff"/>
+
+  <text x="32" y="40" class="title">Point-to-Point: send / recv</text>
+  <text x="32" y="65" class="label">A source rank sends one tensor to one destination rank.</text>
+
+  <text x="45" y="104" class="step">Step 1: source has data, destination waits</text>
+  <g>
+    <rect x="45" y="118" width="220" height="58" class="box"/>
+    <text x="62" y="151" class="rank">rank 0 source</text>
+    <rect x="178" y="132" width="50" height="28" class="p0"/>
+    <text x="203" y="150" class="part">A</text>
+
+    <rect x="555" y="118" width="220" height="58" class="box"/>
+    <text x="572" y="151" class="rank">rank 1 destination</text>
+    <rect x="710" y="132" width="36" height="28" class="empty"/>
+  </g>
+
+  <path d="M203 178 C270 198, 366 224, 440 233 C510 258, 650 312, 735 323" class="arrow"/>
+  <path d="M728 178 C660 198, 540 224, 440 233" class="line"/>
+  <rect x="330" y="204" width="220" height="58" class="phase"/>
+  <text x="440" y="228" class="label" text-anchor="middle">rank 0 calls send(A)</text>
+  <text x="440" y="248" class="label" text-anchor="middle">rank 1 matches recv(A)</text>
+
+  <text x="45" y="302" class="step">Step 2: destination receives A</text>
+  <g>
+    <rect x="45" y="316" width="220" height="36" class="box"/>
+    <text x="62" y="339" class="rank">rank 0</text>
+    <rect x="178" y="323" width="50" height="22" class="p0"/>
+    <text x="203" y="338" class="part">A</text>
+
+    <rect x="555" y="316" width="220" height="36" class="box"/>
+    <text x="572" y="339" class="rank">rank 1</text>
+    <rect x="710" y="323" width="50" height="22" class="p0"/>
+    <text x="735" y="338" class="part">A</text>
+  </g>
+</svg>

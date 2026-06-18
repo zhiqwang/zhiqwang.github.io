@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="430" viewBox="0 0 820 430" role="img" aria-labelledby="title desc">
+  <title id="title">all gather many-to-many communication</title>
+  <desc id="desc">All ranks start with one local shard, exchange shards with peers, and finish with the same concatenated tensor.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: Inter, Arial, sans-serif; fill: #0f172a; }
+    .title { font-size: 22px; font-weight: 700; }
+    .label { font-size: 14px; fill: #475569; }
+    .step { font-size: 14px; font-weight: 700; fill: #334155; }
+    .rank { font-size: 14px; font-weight: 700; }
+    .part { font-size: 11px; font-weight: 700; text-anchor: middle; }
+    .box { fill: #f8fafc; stroke: #94a3b8; stroke-width: 1.5; rx: 8; }
+    .phase { fill: #f1f5f9; stroke: #94a3b8; stroke-width: 1.5; rx: 8; }
+    .arrow { fill: none; stroke: #64748b; stroke-width: 1.6; }
+    .line { fill: none; stroke: #64748b; stroke-width: 1.6; }
+    .p0 { fill: #dbeafe; stroke: #2563eb; stroke-width: 1.5; rx: 4; }
+    .p1 { fill: #dcfce7; stroke: #16a34a; stroke-width: 1.5; rx: 4; }
+    .p2 { fill: #fef3c7; stroke: #d97706; stroke-width: 1.5; rx: 4; }
+    .p3 { fill: #fce7f3; stroke: #db2777; stroke-width: 1.5; rx: 4; }
+  </style>
+  <rect width="820" height="430" fill="#ffffff"/>
+
+  <text x="32" y="40" class="title">Many-to-Many: all_gather</text>
+  <text x="32" y="65" class="label">Each rank contributes one shard and receives the same concatenated tensor.</text>
+
+  <text x="45" y="103" class="step">Step 1: local shards</text>
+  <g>
+    <rect x="45" y="116" width="150" height="48" class="box"/>
+    <text x="60" y="145" class="rank">rank 0</text>
+    <rect x="138" y="126" width="36" height="28" class="p0"/>
+    <text x="156" y="144" class="part">D0</text>
+
+    <rect x="235" y="116" width="150" height="48" class="box"/>
+    <text x="250" y="145" class="rank">rank 1</text>
+    <rect x="328" y="126" width="36" height="28" class="p1"/>
+    <text x="346" y="144" class="part">D1</text>
+
+    <rect x="425" y="116" width="150" height="48" class="box"/>
+    <text x="440" y="145" class="rank">rank 2</text>
+    <rect x="518" y="126" width="36" height="28" class="p2"/>
+    <text x="536" y="144" class="part">D2</text>
+
+    <rect x="615" y="116" width="150" height="48" class="box"/>
+    <text x="630" y="145" class="rank">rank 3</text>
+    <rect x="708" y="126" width="36" height="28" class="p3"/>
+    <text x="726" y="144" class="part">D3</text>
+  </g>
+
+  <text x="45" y="203" class="step">Step 2: many-to-many exchange</text>
+  <path d="M156 165 C236 178, 340 218, 410 251" class="line"/>
+  <path d="M346 165 C370 196, 394 228, 410 251" class="line"/>
+  <path d="M536 165 C504 196, 458 228, 410 251" class="line"/>
+  <path d="M726 165 C650 178, 520 218, 410 251" class="line"/>
+  <path d="M410 251 C410 316, 410 330, 376 334 C300 338, 198 340, 120 340" class="arrow"/>
+  <path d="M410 251 C410 316, 398 330, 310 340" class="arrow"/>
+  <path d="M410 251 C410 316, 426 330, 500 340" class="arrow"/>
+  <path d="M410 251 C410 316, 430 330, 465 334 C540 338, 630 340, 690 340" class="arrow"/>
+  <rect x="235" y="216" width="350" height="70" class="phase"/>
+  <text x="410" y="241" class="label" text-anchor="middle">each rank sends its shard to peers</text>
+  <text x="410" y="263" class="label" text-anchor="middle">and receives shards from peers</text>
+  <text x="45" y="323" class="step">Step 3: identical full tensor on every rank</text>
+  <g>
+    <rect x="45" y="344" width="170" height="52" class="box"/>
+    <text x="59" y="375" class="rank">rank 0</text>
+    <rect x="116" y="356" width="22" height="26" class="p0"/><text x="127" y="373" class="part">D0</text>
+    <rect x="140" y="356" width="22" height="26" class="p1"/><text x="151" y="373" class="part">D1</text>
+    <rect x="164" y="356" width="22" height="26" class="p2"/><text x="175" y="373" class="part">D2</text>
+    <rect x="188" y="356" width="22" height="26" class="p3"/><text x="199" y="373" class="part">D3</text>
+
+    <rect x="235" y="344" width="170" height="52" class="box"/>
+    <text x="249" y="375" class="rank">rank 1</text>
+    <rect x="306" y="356" width="22" height="26" class="p0"/><text x="317" y="373" class="part">D0</text>
+    <rect x="330" y="356" width="22" height="26" class="p1"/><text x="341" y="373" class="part">D1</text>
+    <rect x="354" y="356" width="22" height="26" class="p2"/><text x="365" y="373" class="part">D2</text>
+    <rect x="378" y="356" width="22" height="26" class="p3"/><text x="389" y="373" class="part">D3</text>
+
+    <rect x="425" y="344" width="170" height="52" class="box"/>
+    <text x="439" y="375" class="rank">rank 2</text>
+    <rect x="496" y="356" width="22" height="26" class="p0"/><text x="507" y="373" class="part">D0</text>
+    <rect x="520" y="356" width="22" height="26" class="p1"/><text x="531" y="373" class="part">D1</text>
+    <rect x="544" y="356" width="22" height="26" class="p2"/><text x="555" y="373" class="part">D2</text>
+    <rect x="568" y="356" width="22" height="26" class="p3"/><text x="579" y="373" class="part">D3</text>
+
+    <rect x="615" y="344" width="170" height="52" class="box"/>
+    <text x="629" y="375" class="rank">rank 3</text>
+    <rect x="686" y="356" width="22" height="26" class="p0"/><text x="697" y="373" class="part">D0</text>
+    <rect x="710" y="356" width="22" height="26" class="p1"/><text x="721" y="373" class="part">D1</text>
+    <rect x="734" y="356" width="22" height="26" class="p2"/><text x="745" y="373" class="part">D2</text>
+    <rect x="758" y="356" width="22" height="26" class="p3"/><text x="769" y="373" class="part">D3</text>
+  </g>
+</svg>

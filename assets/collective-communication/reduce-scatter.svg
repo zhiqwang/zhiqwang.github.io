@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="520" viewBox="0 0 860 520" role="img" aria-labelledby="title desc">
+  <title id="title">reduce scatter many-to-many communication</title>
+  <desc id="desc">Same-shaped input buffers are reduced element-wise, then each rank keeps one shard of the reduced result.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: Inter, Arial, sans-serif; fill: #0f172a; }
+    .title { font-size: 22px; font-weight: 700; }
+    .label { font-size: 14px; fill: #475569; }
+    .step { font-size: 14px; font-weight: 700; fill: #334155; }
+    .rank { font-size: 14px; font-weight: 700; }
+    .part { font-size: 11px; font-weight: 700; text-anchor: middle; }
+    .formula { font-size: 12px; fill: #475569; text-anchor: middle; }
+    .box { fill: #f8fafc; stroke: #94a3b8; stroke-width: 1.5; rx: 8; }
+    .phase { fill: #f1f5f9; stroke: #94a3b8; stroke-width: 1.5; rx: 8; }
+    .arrow { fill: none; stroke: #64748b; stroke-width: 1.8; }
+    .line { fill: none; stroke: #64748b; stroke-width: 1.8; }
+    .p0 { fill: #dbeafe; stroke: #2563eb; stroke-width: 1.5; rx: 4; }
+    .p1 { fill: #dcfce7; stroke: #16a34a; stroke-width: 1.5; rx: 4; }
+    .p2 { fill: #fef3c7; stroke: #d97706; stroke-width: 1.5; rx: 4; }
+    .sum { fill: #fee2e2; stroke: #dc2626; stroke-width: 1.5; rx: 4; }
+  </style>
+  <rect width="860" height="520" fill="#ffffff"/>
+
+  <text x="32" y="40" class="title">Many-to-Many: reduce_scatter</text>
+  <text x="32" y="65" class="label">Reduce matching positions across ranks, then scatter reduced shards.</text>
+
+  <text x="45" y="104" class="step">Step 1: every rank contributes a full input buffer</text>
+  <g>
+    <rect x="45" y="118" width="220" height="58" class="box"/>
+    <text x="62" y="151" class="rank">rank 0</text>
+    <rect x="128" y="132" width="36" height="28" class="p0"/><text x="146" y="150" class="part">A0</text>
+    <rect x="168" y="132" width="36" height="28" class="p1"/><text x="186" y="150" class="part">A1</text>
+    <rect x="208" y="132" width="36" height="28" class="p2"/><text x="226" y="150" class="part">A2</text>
+
+    <rect x="320" y="118" width="220" height="58" class="box"/>
+    <text x="337" y="151" class="rank">rank 1</text>
+    <rect x="403" y="132" width="36" height="28" class="p0"/><text x="421" y="150" class="part">B0</text>
+    <rect x="443" y="132" width="36" height="28" class="p1"/><text x="461" y="150" class="part">B1</text>
+    <rect x="483" y="132" width="36" height="28" class="p2"/><text x="501" y="150" class="part">B2</text>
+
+    <rect x="595" y="118" width="220" height="58" class="box"/>
+    <text x="612" y="151" class="rank">rank 2</text>
+    <rect x="678" y="132" width="36" height="28" class="p0"/><text x="696" y="150" class="part">C0</text>
+    <rect x="718" y="132" width="36" height="28" class="p1"/><text x="736" y="150" class="part">C1</text>
+    <rect x="758" y="132" width="36" height="28" class="p2"/><text x="776" y="150" class="part">C2</text>
+  </g>
+
+  <path d="M146 178 C220 190, 340 210, 430 233" class="line"/>
+  <path d="M430 178 C430 198, 430 216, 430 233" class="line"/>
+  <path d="M696 178 C620 190, 515 210, 430 233" class="line"/>
+  <path d="M430 233 C430 286, 432 322, 451 337" class="arrow"/>
+  <path d="M430 233 C442 286, 470 322, 497 337" class="arrow"/>
+  <path d="M430 233 C462 286, 510 322, 543 337" class="arrow"/>
+  <rect x="250" y="198" width="360" height="70" class="phase"/>
+  <text x="430" y="221" class="label" text-anchor="middle">Phase A: reduce</text>
+  <text x="430" y="240" class="label" text-anchor="middle">S0=A0+B0+C0, S1=A1+B1+C1</text>
+  <text x="430" y="258" class="label" text-anchor="middle">S2=A2+B2+C2</text>
+
+  <text x="45" y="310" class="step">Step 2: reduced result is split by destination rank</text>
+  <g>
+    <rect x="250" y="324" width="360" height="58" class="box"/>
+    <text x="280" y="357" class="rank">reduced full result</text>
+    <rect x="430" y="337" width="42" height="28" class="sum"/><text x="451" y="355" class="part">S0</text>
+    <rect x="476" y="337" width="42" height="28" class="sum"/><text x="497" y="355" class="part">S1</text>
+    <rect x="522" y="337" width="42" height="28" class="sum"/><text x="543" y="355" class="part">S2</text>
+  </g>
+
+  <path d="M451 382 C430 402, 422 422, 400 432 C330 444, 248 448, 203 448" class="arrow"/>
+  <path d="M497 382 C490 406, 482 426, 478 448" class="line"/>
+  <path d="M543 382 C604 410, 684 424, 753 448" class="arrow"/>
+  <text x="45" y="416" class="step">Step 3: each rank keeps only its reduced shard</text>
+  <g>
+    <rect x="45" y="456" width="220" height="42" class="box"/>
+    <text x="62" y="482" class="rank">rank 0</text>
+    <rect x="178" y="464" width="50" height="26" class="sum"/><text x="203" y="482" class="part">S0</text>
+
+    <rect x="320" y="456" width="220" height="42" class="box"/>
+    <text x="337" y="482" class="rank">rank 1</text>
+    <rect x="453" y="464" width="50" height="26" class="sum"/><text x="478" y="482" class="part">S1</text>
+
+    <rect x="595" y="456" width="220" height="42" class="box"/>
+    <text x="612" y="482" class="rank">rank 2</text>
+    <rect x="728" y="464" width="50" height="26" class="sum"/><text x="753" y="482" class="part">S2</text>
+  </g>
+</svg>
