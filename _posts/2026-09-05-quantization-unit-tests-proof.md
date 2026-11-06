@@ -1,8 +1,8 @@
 ---
 title: 'Testing Quantized Operators: From First Principles to Mathematical Proof'
-date: 2026-09-05 00:00:00 +0800
+date: 2026-09-05 13:25:00 +0800
 permalink: /posts/quantization-unit-tests-proof/
-description: 'Learn how to test quantized operators, why the reference input matters, and where exact proofs meet floating-point arithmetic.'
+description: 'Prove the exact reference contract for quantized operators and understand why matching inputs does not guarantee bitwise agreement with a floating-point reference.'
 categories: [Machine Learning]
 tags: [quantization, neural-networks, unit-testing]
 math: true
@@ -11,11 +11,13 @@ mermaid: true
 
 A quantized neural network deliberately changes the numbers it computes with. That makes testing surprisingly subtle: when an output differs from the original model, how do we tell whether the difference is expected quantization error or an implementation bug?
 
-The key is to give the implementation and its reference **the same represented inputs and the same output quantization rule**. We can then check whether the implementation performs the specified computation. Measuring how much quantization affects the model's predictions is a separate, equally useful test.
+Start by giving the implementation and its reference **the same represented inputs and an explicit numerical contract**. That contract includes the output quantization rule and the arithmetic used to compute it. Matching the inputs and final rounding rule alone does not guarantee bitwise agreement. Measuring how much quantization affects the model's predictions is a separate, equally useful test.
 
 This article develops that distinction from a small numerical example to a mathematical proof, then shows why ordinary floating-point arithmetic complicates exact comparisons. You need basic algebra and an understanding of unit tests; previous experience writing quantized kernels is optional. A *kernel* here simply means the implementation of an operation, such as matrix multiplication, in an inference runtime.
 
-The starting point is the testing procedure in Lei Mao's [Quantization for Neural Networks](https://leimao.github.io/article/Neural-Networks-Quantization/#Quantization-Implementation-Unit-Tests). It compares integer outputs against a reference computed from quantized and then dequantized inputs. The derivations below explain why that construction works and state the assumptions needed for exact agreement.
+An optional [Lean appendix](#appendix-checking-the-proof-with-lean) provides machine-checked versions of the main mathematical claims and explains their verification scope.
+
+The starting point is the testing procedure in Lei Mao's [Quantization for Neural Networks](https://leimao.github.io/article/Neural-Networks-Quantization/#Quantization-Implementation-Unit-Tests). It compares integer outputs against a floating-point reference computed from quantized and then dequantized inputs. This article proves the mathematical basis of that shared-input construction under an exact arithmetic contract. It also examines the additional conditions required for the bitwise agreement requested in Lei Mao's step 8, including a case where the posted computation paths disagree.
 
 ## Where quantization fits
 
@@ -40,7 +42,7 @@ This article focuses on the second question and explains how the third can chang
 
 ## Integer codes and the values they represent
 
-Consider an evenly spaced grid of representable values. The **scale** $s$ is the distance between adjacent grid points. The **zero point** $z$ is the integer code that represents real zero.
+Consider an evenly spaced grid of representable values. The **scale** $s$ is the distance between adjacent grid points. The **zero point** $z$ locates real zero on the grid; it is a usable zero code when it lies in the allowed code range.
 
 We use the following affine quantization and dequantization functions:
 
@@ -56,7 +58,18 @@ D_{s,z}(q)=s(q-z).
 \end{equation}
 $$
 
-Here $s>0$, the endpoints and $z$ are integers, and $R$ is a deterministic rounding rule that leaves integers unchanged. For example, *round to nearest, ties to even* chooses the nearest integer and resolves an exact halfway case by choosing the even one: $R(0.5)=0$ and $R(1.5)=2$. Clipping, also called *saturation*, clamps a result to the allowed integer range.
+Here $s>0$, the endpoints and $z$ are integers with $q_{\min}\le q_{\max}$, and $R:\mathbb R\to\mathbb Z$ is a deterministic rounding rule that leaves integers unchanged. For example, *round to nearest, ties to even* chooses the nearest integer and resolves an exact halfway case by choosing the even one: $R(0.5)=0$ and $R(1.5)=2$. Clipping, also called *saturation*, clamps a result to the allowed integer range.
+
+The legal scalar code domain is the nonempty set
+
+$$
+\begin{equation}
+C=\{q\in\mathbb Z\mid q_{\min}\le q\le q_{\max}\}.
+\notag
+\end{equation}
+$$
+
+The formula $D(z)=0$ gives a legal representation of zero only when $z\in C$. The round-trip and equivalence proofs below do not require this extra condition; the ReLU simplification states it explicitly. We write $C_x$ and $C_y$ for the legal input and output code domains. For tensors or multiple inputs, these domains contain collections of legal codes with the required shapes.
 
 For a small example, use $s=0.25$, $z=4$, and integer codes from $0$ through $15$. The represented real values range from $-1$ to $2.75$.
 
@@ -87,7 +100,7 @@ The placement of rounding is part of the specification. This article puts $z$ in
 
 ### What survives a round trip?
 
-Fake quantization has the forward mapping
+Ideal fake quantization has the forward mapping
 
 $$
 \begin{equation}
@@ -119,11 +132,11 @@ Decoding a code and encoding it again recovers the code. This follows because th
 
 Until the section on floating-point arithmetic, all real-valued formulas use exact arithmetic. We also assume that $f$ is defined on every decoded legal input and that $K$ returns legal output codes.
 
-## Constructing a reference for the same computation
+## Constructing an exact reference from the represented inputs
 
 Suppose we want to test a quantized implementation $K$ of an operation $f$. Its quantization parameters are arguments or configuration of the kernel; we omit them from $K(q)$ to keep the equations readable.
 
-A reference comparison proceeds as follows:
+For the ideal exact arithmetic contract, a reference comparison proceeds as follows:
 
 1. Fix the input and output parameters, integer ranges, and rounding rules.
 2. Choose legal integer inputs $q$, either directly or by quantizing real inputs: $q=Q_x(x)$.
@@ -164,11 +177,11 @@ $$
 
 **Equation (2) defines the ideal quantized operation.** An implementation satisfies it only if its computation matches the specified scaling, rounding, and clipping. Choosing an integer data type alone gives no such guarantee.
 
-In code, the reference might use floating-point operations, exact rational arithmetic, or a carefully specified backend emulator. Those choices can give different answers near rounding boundaries, as we will see later.
+An executable reference must implement the chosen contract. Exact rational arithmetic can evaluate Equation (2) for rational scales and operations such as addition and multiplication. Using floating-point operations requires justification that numerical errors cannot change the expected code. A backend emulator can instead model a different, explicitly specified arithmetic contract.
 
-## Why this is equivalent to fake quantization
+## Equivalence to fake quantization in exact arithmetic
 
-The reference above has a precise connection to a fake-quantized forward computation. With fake quantization at the input and output of $f$, the result is
+The reference above has a precise connection to an ideal fake-quantized forward computation. With exact arithmetic and fake quantization at the input and output of $f$, the result is
 
 $$
 \begin{equation}
@@ -210,7 +223,7 @@ F_{\mathrm{int}}(x)
 \end{equation}
 $$
 
-This proves sufficiency: satisfying the integer specification is enough to obtain the same decoded output.
+This proves sufficiency under these exact arithmetic definitions: satisfying the integer specification is enough to obtain the same decoded output.
 
 ### From forward equivalence to integer correctness
 
@@ -242,15 +255,19 @@ The two output codes must therefore be equal, which is Equation (2). Combining b
 $$
 \begin{equation}
 \boxed{
-\forall q,\ K(q)=Q_y(f(D_x(q)))
-\iff
-\forall x,\ F_{\mathrm{int}}(x)=F_{\mathrm{fake}}(x).
+\begin{aligned}
+&\left[\forall q\in C_x,\ K(q)=Q_y(f(D_x(q)))\right]\\
+&\qquad\iff
+\left[\forall x,\ F_{\mathrm{int}}(x)=F_{\mathrm{fake}}(x)\right].
+\end{aligned}
 }
 \tag{4}
 \end{equation}
 $$
 
-Here $\forall$ means "for every," and $\iff$ means that the implication holds in both directions. This is the mathematical foundation of the reference comparison.
+Here $\forall$ means "for every," and $\iff$ means that the implication holds in both directions. This establishes the equivalence of the ideal integer and fake-quantized specifications.
+
+The right-hand side quantifies over the full real input space for the operation. Equation (1) ensures that each legal code is reached by an input in that space. Agreement only on a dataset establishes the condition only for codes reached by that dataset. Equation (4) proves the equivalence of two correctness specifications; proving that a particular kernel satisfies either specification remains a separate task.
 
 The quantization boundaries matter. A fused sequence of operations with one output quantizer can have different semantics from a sequence that rounds an intermediate result. Apply the theorem to the computation and quantization boundaries that the kernel actually promises to implement.
 
@@ -497,6 +514,31 @@ A tolerance check on the total deviation mixes two effects. A small total deviat
 
 The proof used exact real arithmetic. An FP32 reference program uses 32-bit floating-point arithmetic, which rounds intermediate results. Consequently, **an exact quantized implementation can disagree with an ordinary FP32 reference**.
 
+### Relating the proof to Lei Mao's test
+
+In Lei Mao's [testing procedure](https://leimao.github.io/article/Neural-Networks-Quantization/#Quantization-Implementation-Unit-Tests), step 6 runs an actual floating-point operation and step 7 runs the quantized implementation. Step 8 requires their integer output tensors to be bitwise identical. To connect that requirement to Equation (4), distinguish the exact specification from the executable reference:
+
+$$
+\begin{aligned}
+K_{\mathrm{spec}}(q)&=Q_y\bigl(f(D_x(q))\bigr),\\
+\operatorname{Ref}_{\mathrm{fp}}(q)
+&=Q_y^{\mathrm{fp}}\bigl(f_{\mathrm{fp}}(D_x^{\mathrm{fp}}(q))\bigr).
+\end{aligned}
+$$
+
+The superscripts and subscripts $\mathrm{fp}$ denote the actual finite-precision computations, including decoding and output quantization. Deriving agreement between a machine implementation and this reference by way of the exact specification involves two separate claims:
+
+$$
+\begin{aligned}
+K_{\mathrm{machine}}(q)&=K_{\mathrm{spec}}(q),\\
+\operatorname{Ref}_{\mathrm{fp}}(q)&=K_{\mathrm{spec}}(q).
+\end{aligned}
+$$
+
+The first is the kernel-correctness claim being tested. The second is what makes the floating-point program an exact oracle for that claim. Equation (4) establishes neither implementation claim: the kernel and reference arithmetic each need their own justification. The counterexample below shows why the reference equality cannot be assumed from shared inputs alone.
+
+A different contract can explicitly require $K_{\mathrm{machine}}=\operatorname{Ref}_{\mathrm{fp}}$ for a specified floating-point backend. Bitwise comparison then tests that contract directly, and an implementation satisfying the ideal real-arithmetic formula may fail it. The numerical contract determines which result is correct. The shared-input procedure is also one validation method among several: exact references, backend emulators, and direct implementation proofs can establish correctness under their respective assumptions.
+
 ### A small counterexample
 
 Consider addition, $f(u,v)=u+v$, with integer inputs and quantization parameters
@@ -572,9 +614,58 @@ print(round(rounded_sum))  # 0: quantize after FP32 rounding
 
 The explicit `fp32` conversion after addition models the FP32 result for these particular values. The example demonstrates two rounding stages: rounding the sum to a floating-point value, then rounding that value to an integer code. Even exactly represented inputs do not eliminate intermediate rounding error.
 
+### The same discrepancy in the posted matrix-multiplication functions
+
+The counterexample also fits a $1\times1$ matrix multiplication with bias. Use signed 8-bit codes, set every zero point to zero, and choose
+
+$$
+\begin{aligned}
+X_q=W_q=b_q&=[1],\\
+s_X&=\tfrac12,\qquad s_W=s_Y=1,\qquad s_b=2^{-26}.
+\end{aligned}
+$$
+
+The represented computation is again $\tfrac12\cdot1+2^{-26}$. Calling Lei Mao's posted `quantization_matrix_multiplication_int8`, `dequantization`, and `quantization_int8` functions with these parameters under Python 3.10 and NumPy 1.26.4 gives:
+
+| Path | Output code |
+| --- | --- |
+| Exact specification | `[[1]]` |
+| Posted quantized matrix-multiplication function | `[[1]]` |
+| Posted FP32 reference path | `[[0]]` |
+
+All inputs decode exactly in this example, and neither integer overflow nor output saturation occurs. The reference loses the small bias during FP32 addition. With these arguments and this NumPy version, the quantized path evaluates its scaled accumulator in FP64 and retains the bias until integer rounding. It matches the exact specification for this input, while both output-equality assertions fail. These are different legal parameters from the article's original random example; the result does not claim that its original sample fails.
+
+A [standalone reproduction](https://github.com/zhiqwang/zhiqwang.github.io/blob/main/tools/quantization-proof/leimao_gemm_counterexample.py) implements these two paths for the zero-point-zero case. From the repository root, with `uv` installed, run:
+
+```sh
+uv run --no-project --python 3.10 --with numpy==1.26.4 \
+  python tools/quantization-proof/leimao_gemm_counterexample.py
+```
+
+This demonstrates why a bitwise equality requirement needs an agreed arithmetic contract. It also distinguishes a concrete computation experiment from the exact-arithmetic Lean proofs.
+
 ### When small errors cannot change a code
 
-Let $t$ be the ideal value just before integer rounding, including the scale conversion and zero-point shift. Suppose the reference and implementation obtain $t+\delta_{\mathrm{ref}}$ and $t+\delta_{\mathrm{impl}}$ instead.
+For one output element, define the ideal value just before integer rounding, its ideal output code, and its distance to the nearest rounding boundary:
+
+$$
+\begin{aligned}
+t&=\frac{f(D_x(q))}{s_y}+z_y,\\
+q_*&=\operatorname{clip}_y(R(t)),\\
+m(t)&=\operatorname{dist}\left(t,\mathbb Z+\tfrac12\right).
+\end{aligned}
+$$
+
+Suppose the actual reference and implementation outputs have the form
+
+$$
+\begin{aligned}
+q_{\mathrm{ref}}&=\operatorname{clip}_y(R(t+\delta_{\mathrm{ref}})),\\
+q_{\mathrm{impl}}&=\operatorname{clip}_y(R(t+\delta_{\mathrm{impl}})).
+\end{aligned}
+$$
+
+These expressions require finite values before rounding and the same final rounding rule, clipping range, and integer encoding. All errors from decoding, operator evaluation, scale conversion, and zero-point addition belong in the $\delta$ terms. Intermediate overflow or additional rounding stages must be accounted for in the error analysis.
 
 For nearest-integer rounding with the same tie rule and output range, a sufficient condition for equal output codes is
 
@@ -592,9 +683,93 @@ $$
 \end{equation}
 $$
 
-The expression on the right is the distance to the nearest half-integer rounding boundary, such as $0.5$ or $1.5$. If both errors are smaller than that distance, neither computation crosses a boundary. Both round to the same integer, and applying the same clipping rule preserves equality.
+The expression on the right is the distance to the nearest half-integer rounding boundary, such as $0.5$ or $1.5$. If both errors are smaller than that distance, both computed values and $t$ lie in the same open rounding interval. All three round to the same integer, and applying the same clipping rule preserves equality.
 
-For example, $t=2.2$ is $0.3$ away from the nearest boundary, $2.5$. Errors with magnitude strictly below $0.3$ cannot change its rounded code. At $t=2.5$, the distance is zero, so an arbitrarily small error can matter. This is a sufficient condition, not a necessary one: clipping can also make different rounded integers produce the same final code.
+To apply this result, establish error bounds $|\delta_{\mathrm{ref}}|\le\varepsilon_{\mathrm{ref}}$ and $|\delta_{\mathrm{impl}}|\le\varepsilon_{\mathrm{impl}}$, measured in output-code units. A conditional version of the bitwise agreement claim is then
+
+$$
+\begin{equation}
+\boxed{
+\max(\varepsilon_{\mathrm{ref}},\varepsilon_{\mathrm{impl}})<m(t)
+\quad\Longrightarrow\quad
+q_{\mathrm{ref}}=q_{\mathrm{impl}}=q_*.
+}
+\tag{14}
+\end{equation}
+$$
+
+For tensors, the condition must hold for every output element. Equal codes subsequently produce identical floating-point bit patterns when decoded by the same deterministic implementation with the same parameters, data type, and floating-point environment.
+
+For example, $t=2.2$ has margin $0.3$, so errors strictly below $0.3$ cannot change its code. At $t=2.5$, the margin is zero; exact ties need separate analysis using the tie rule. Equation (14) is sufficient, not necessary: clipping can also make different rounded integers produce the same final code.
+
+The earlier counterexample explains why the strict inequality matters. There,
+
+$$
+\begin{aligned}
+t&=\tfrac12+2^{-26},&m(t)&=2^{-26},\\
+\delta_{\mathrm{ref}}&=-2^{-26},&\delta_{\mathrm{impl}}&=0.
+\end{aligned}
+$$
+
+The reference error equals the margin and lands exactly on $0.5$. Ties-to-even produces code $0$, while the other path produces code $1$. Thus replacing $<$ by $\le$ in the general condition is invalid. Neither Equation (13) nor Equation (14) supplies a program's error bounds; those remain separate proof obligations.
+
+### When comparison with the reference establishes correctness
+
+To justify a unit-test oracle, first establish the reference's code independently of the implementation under test. For example, the one-sided bound $\varepsilon_{\mathrm{ref}}<m(t)$ proves
+
+$$
+\begin{equation}
+\operatorname{Ref}_{\mathrm{fp}}(q)=K_{\mathrm{spec}}(q).
+\notag
+\end{equation}
+$$
+
+For any candidate implementation $K$, equality substitution then gives
+
+$$
+\begin{equation}
+\boxed{
+K(q)=\operatorname{Ref}_{\mathrm{fp}}(q)
+\iff
+K(q)=K_{\mathrm{spec}}(q).
+}
+\tag{15}
+\end{equation}
+$$
+
+This result assumes no correctness property or error bound for $K$. Once the reference code is certified, a matching result establishes correctness for that input, and a mismatch establishes failure to implement the exact specification for that input. Reference certification may use exact arithmetic or a rigorously bounded interval containing $t$: if every value in that interval quantizes to the reference's code, that code is justified.
+
+The equivalence applies input by input wherever reference validity has been proved. Passing a tested subset $T$ of those inputs establishes agreement on $T$; correctness on the full domain still requires exhaustive coverage or a separate proof.
+
+### A conditional bound of one code value
+
+Without a certified rounding margin, a weaker conclusion is sometimes available. Keep the same nearest-integer rounding and clipping assumptions, and let $a=t+\delta_{\mathrm{ref}}$ and $b=t+\delta_{\mathrm{impl}}$ be the actual values before final rounding. Then
+
+$$
+\begin{equation}
+\boxed{
+|a-b|<1
+\quad\Longrightarrow\quad
+|q_{\mathrm{ref}}-q_{\mathrm{impl}}|\le1.
+}
+\tag{16}
+\end{equation}
+$$
+
+Each nearest-integer rounding changes its argument by at most $1/2$, so
+
+$$
+\begin{equation}
+|R(a)-R(b)|
+\le |R(a)-a|+|a-b|+|b-R(b)|
+<2.
+\notag
+\end{equation}
+$$
+
+The left side is an integer and is therefore at most $1$. Applying the same clipping function cannot increase the difference. A sufficient way to establish the premise is $\varepsilon_{\mathrm{ref}}+\varepsilon_{\mathrm{impl}}<1$, again in output-code units.
+
+The strict premise matters here too: with ties-to-even, $a=0.5$ and $b=1.5$ are one unit apart but round to $0$ and $2$. If the output range contains both codes, clipping preserves that difference. Equation (16) therefore provides a conditional difference bound, not a general allowance for one-code discrepancies. It compares the two paths without establishing either one's correctness relative to the ideal specification.
 
 ### The backend may specify another arithmetic path
 
@@ -650,4 +825,84 @@ Here $K_{\mathrm{spec}}$ denotes the chosen reference contract, and $\not\Righta
 
 The ReLU example exhausts a small scalar domain for fixed parameters. Its algebraic proof covers all parameter choices satisfying the stated assumptions. For matrix multiplication, exhaustive tensor inputs are usually impractical, so algebraic derivation, boundary cases, randomized comparisons, and checks of the actual machine arithmetic provide complementary evidence.
 
-The reference procedure is therefore one well-founded way to test quantized implementations. A correct kernel can still belong to a model with poor prediction accuracy, and a model with good accuracy can still hide a kernel bug. Writing down the numerical contract lets each test answer a precise question.
+Shared-input references test a specified numerical contract. Their expected equality must be justified by that contract and the arithmetic of both paths. A correct kernel can still belong to a model with poor prediction accuracy, and a model with good accuracy can still hide a kernel bug. Writing down the numerical contract lets each test answer a precise question.
+
+## Appendix: checking the proof with Lean
+
+The [companion Lean project](https://github.com/zhiqwang/zhiqwang.github.io/tree/main/tools/quantization-proof) formalizes the exact-arithmetic claims using Lean 4.24.0 and Mathlib v4.24.0. The toolchain and dependency revisions are recorded in the project. Its [proof source](https://github.com/zhiqwang/zhiqwang.github.io/blob/main/tools/quantization-proof/QuantizationProof.lean) builds without `sorry`, Lean's placeholder for an unfinished proof. The proofs do not verify Lei Mao's NumPy functions or establish that a floating-point reference implements the exact specification.
+
+### The core equivalence
+
+Equation (4) needs only the input round-trip identity and output decoding injectivity. The central theorem is:
+
+```lean
+theorem correct_iff_fake
+    {X Y Cx Cy : Type*}
+    (Qx : X → Cx) (Dx : Cx → X)
+    (Qy : Y → Cy) (Dy : Cy → Y)
+    (f : X → Y) (K : Cx → Cy)
+    (input_roundtrip : ∀ q, Qx (Dx q) = q)
+    (output_injective : Function.Injective Dy) :
+    (∀ q, K q = Qy (f (Dx q))) ↔
+    (∀ x, Dy (K (Qx x)) = Dy (Qy (f (Dx (Qx x))))) := by
+  constructor
+  · intro h x
+    rw [h (Qx x)]
+  · intro h q
+    apply output_injective
+    simpa only [input_roundtrip] using h (Dx q)
+```
+
+Here `X` and `Y` are input and output value types, and `Cx` and `Cy` are code types. In the affine specialization, legal codes have the subtype `{q : ℤ // qmin ≤ q ∧ q ≤ qmax}`: each code carries a proof that it is in range. The types of `Qx`, `Qy`, and `K` therefore enforce legal outputs.
+
+The first branch substitutes `Qx x` into integer correctness. The second applies output injectivity and specializes forward equivalence to `Dx q`, simplifying with the input round-trip identity. The affine part of the project proves these two hypotheses from the actual quantization definitions, including clipping, positive scales, and integer-preserving rounding.
+
+### Which claims are checked?
+
+| Article result | Lean declarations |
+| --- | --- |
+| Round trip (1) and decoding injectivity | `Affine.encode_decode`, `Affine.decode_injective` |
+| Equivalence (4), including affine quantization | `correct_iff_fake`, `Affine.correct_iff_fake_affine` |
+| Decoded-output difference (5) | `Affine.decoded_difference` |
+| Dot-product expansion and requantization (6), (7) | `centered_dot_expansion`, `decoded_dot`, `matmul_reference_entry` |
+| ReLU with matching parameters (9) | `Affine.relu_correct` |
+| Error decomposition (10) | `error_decomposition` |
+| Integer-rounding facts in (11), (12) | `exact_sum_and_half_round_differ` |
+| Rounding stability within an open cell | `rounding_stable_in_cell`, `nearestEven_in_cell` |
+| Equality to the ideal code under certified error bounds (14), in cell form | `quantized_paths_eq_of_error_bounds` |
+| Correctness-test equivalence (15) for a certified reference cell | `reference_test_iff_in_cell` |
+| Conditional one-code difference bound (16) | `quantized_difference_le_one`, `nearestEven_error_le_half` |
+
+The rounding convention needs particular attention. Mathlib v4.24.0's [`round`](https://github.com/leanprover-community/mathlib4/blob/v4.24.0/Mathlib/Algebra/Order/Round.lean) rounds halfway cases toward positive infinity. The companion defines `nearestEven` separately and proves that it preserves integers and rounds points inside each open nearest-integer cell to its center. It also checks the counterexample to moving an integer zero point outside ties-to-even rounding.
+
+For stability, the formalization uses an explicit cell $n-\tfrac12<t<n+\tfrac12$, with $n\in\mathbb Z$, and the margin
+
+$$
+\begin{equation}
+m_n(t)=\min\left(t-\left(n-\tfrac12\right),\left(n+\tfrac12\right)-t\right).
+\notag
+\end{equation}
+$$
+
+The stability theorem proves that errors whose magnitudes are strictly below this margin leave both rounded results equal to $n$. The certified-bound and reference-test lemmas use the same explicit margin, and the reference-test lemma makes no correctness assumption about the candidate output. Inside the cell, the margin is the distance to the nearest half-integer boundary in Equation (13). The project checks these explicit-margin statements; the identification with the distance-to-a-set notation is not itself formalized.
+
+The one-code bound is proved from the nearest-rounding error bound $|R(u)-u|\le1/2$ and the fact that clipping cannot enlarge a difference. The project also proves this rounding bound for `nearestEven` and checks the two-code difference at the excluded endpoint $|a-b|=1$.
+
+The scope of the machine check follows the types: `ℝ` denotes exact real arithmetic, and `ℤ` denotes unbounded integers. Numerical error bounds enter the new theorems as hypotheses; the proofs do not derive them for a NumPy or device implementation. The formalization checks the two integer-rounding results in the FP32 example; the IEEE-754 addition that produces $0.5$ is demonstrated by the Python example and is not formalized here. Verifying a particular device kernel additionally requires a model of its arithmetic, overflow behavior, rounding order, and data access.
+
+### Reproducing the check
+
+With the pinned Lean toolchain available, run these commands from the repository root. The cache command downloads the compiled dependencies needed by this project.
+
+```sh
+cd tools/quantization-proof
+MATHLIB_NO_CACHE_ON_UPDATE=1 lake update
+lake exe cache get Mathlib.Data.Real.Archimedean Mathlib.Data.Rat.Floor \
+  Mathlib.Algebra.Order.Floor.Ring Mathlib.Algebra.BigOperators.Fin \
+  Mathlib.Tactic.FieldSimp Mathlib.Tactic.Linarith \
+  Mathlib.Tactic.NormNum Mathlib.Tactic.Ring
+lake build
+lake env lean QuantizationProof.lean
+```
+
+The final command also prints the axiom dependencies of the main theorems. The abstract `correct_iff_fake` theorem depends on no axioms. The reported concrete arithmetic proofs use Lean's standard `propext`, `Classical.choice`, and `Quot.sound`; none reports `sorryAx`. This checks the stated mathematical implications for all inputs satisfying their hypotheses. Checking a deployed kernel still requires evidence that its actual computation implements the formal specification.
