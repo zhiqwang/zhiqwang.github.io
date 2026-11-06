@@ -1,6 +1,11 @@
 ---
 ---
 
+@use 'abstracts/variables' with (
+  $sidebar-width-large: 280px
+);
+@use 'abstracts/breakpoints' as bp;
+
 /* prettier-ignore */
 @use 'main
 {%- if jekyll.environment == 'production' -%}
@@ -19,6 +24,18 @@ body {
   font-family: var(--font-sans-zh);
 }
 
+/* Give technical articles more room while keeping the navigation readable. */
+@include bp.xl {
+  #main-wrapper > .container > .row > main,
+  #tail-wrapper {
+    width: 78%;
+  }
+
+  #panel-wrapper {
+    width: 22%;
+  }
+}
+
 /* Inline code and code blocks */
 code,
 kbd,
@@ -27,6 +44,19 @@ pre,
 .highlight,
 .highlighter-rouge {
   font-family: var(--font-mono-zh);
+}
+
+/* Keep prose tables within the article column by wrapping their cells. */
+.table-wrapper > table.table-text-wrap {
+  width: 100%;
+  table-layout: auto;
+}
+
+.table-wrapper > table.table-text-wrap th,
+.table-wrapper > table.table-text-wrap td {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  vertical-align: top;
 }
 
 /* ── LighterPack embed ── */

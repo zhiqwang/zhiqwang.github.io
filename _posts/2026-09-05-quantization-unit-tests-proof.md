@@ -9,6 +9,8 @@ math: true
 mermaid: true
 ---
 
+{::options smart_quotes="apos,apos,quot,quot" /}
+
 A quantized neural network deliberately changes the numbers it computes with. That makes testing surprisingly subtle: when an output differs from the original model, how do we tell whether the difference is expected quantization error or an implementation bug?
 
 Start by giving the implementation and its reference **the same represented inputs and an explicit numerical contract**. That contract includes the output quantization rule and the arithmetic used to compute it. Matching the inputs and final rounding rule alone does not guarantee bitwise agreement. Measuring how much quantization affects the model's predictions is a separate, equally useful test.
@@ -37,6 +39,7 @@ Both workflows need reliable operators at deployment. It helps to distinguish th
 | Does the quantized model retain useful accuracy? | Predictions or evaluation metrics on representative data. |
 | Does this kernel implement the chosen numerical specification? | Its output codes against a reference for that specification. |
 | Does this kernel agree with a particular deployment backend? | Its outputs against that backend's arithmetic rules and permitted tolerances. |
+{: .table-text-wrap}
 
 This article focuses on the second question and explains how the third can change the reference. We hold quantization parameters fixed for each comparison. Choosing those parameters, including calibration or dynamic parameter estimation, requires its own checks.
 
@@ -79,6 +82,7 @@ For a small example, use $s=0.25$, $z=4$, and integer codes from $0$ through $15
 | $0$ | $4$ | $0$ |
 | $0.6$ | $6$ | $0.5$ |
 | $4$ | $15$ | $2.75$ |
+{: .table-text-wrap}
 
 The third row illustrates rounding; the last illustrates clipping. In particular, code $6$ means $0.5$ under these parameters. Arithmetic on codes must account for that meaning.
 
@@ -93,6 +97,7 @@ The notation used throughout the article is:
 | $Q_y,D_y$ | Output quantization and dequantization, possibly with different parameters. |
 | $f$ | The mathematical operation we want to compute. |
 | $K$ | Its implementation that accepts and returns integer codes. |
+{: .table-text-wrap}
 
 For tensors, quantization acts element by element. Quantized weights and biases count as inputs too, each with their own parameters. The notation initially uses one scale and zero point per tensor. The equivalence proof also applies to fixed parameters per channel, provided every element uses the correct positive scale and zero point.
 
@@ -434,19 +439,15 @@ qmin, qmax = -128, 127
 scale = Fraction(1, 4)
 zero_point = 5
 
-
 def quantize(x):
     code = round(x / scale + zero_point)
     return min(qmax, max(qmin, code))
 
-
 def dequantize(code):
     return scale * (code - zero_point)
 
-
 def quantized_relu(code):
     return max(code, zero_point)
-
 
 for q_input in range(qmin, qmax + 1):
     represented_input = dequantize(q_input)
@@ -600,10 +601,8 @@ You can reproduce the discrepancy without installing a numerical library:
 from fractions import Fraction
 import struct
 
-
 def fp32(value):
     return struct.unpack("<f", struct.pack("<f", value))[0]
-
 
 exact_sum = Fraction(1, 2) + Fraction(1, 2**26)
 rounded_sum = fp32(fp32(0.5) + fp32(2.0**-26))
@@ -632,6 +631,7 @@ The represented computation is again $\tfrac12\cdot1+2^{-26}$. Calling Lei Mao's
 | Exact specification | `[[1]]` |
 | Posted quantized matrix-multiplication function | `[[1]]` |
 | Posted FP32 reference path | `[[0]]` |
+{: .table-text-wrap}
 
 All inputs decode exactly in this example, and neither integer overflow nor output saturation occurs. The reference loses the small bias during FP32 addition. With these arguments and this NumPy version, the quantized path evaluates its scaled accumulator in FP64 and retains the bias until integer rounding. It matches the exact specification for this input, while both output-equality assertions fail. These are different legal parameters from the article's original random example; the result does not claim that its original sample fails.
 
@@ -685,7 +685,7 @@ $$
 
 The expression on the right is the distance to the nearest half-integer rounding boundary, such as $0.5$ or $1.5$. If both errors are smaller than that distance, both computed values and $t$ lie in the same open rounding interval. All three round to the same integer, and applying the same clipping rule preserves equality.
 
-To apply this result, establish error bounds $|\delta_{\mathrm{ref}}|\le\varepsilon_{\mathrm{ref}}$ and $|\delta_{\mathrm{impl}}|\le\varepsilon_{\mathrm{impl}}$, measured in output-code units. A conditional version of the bitwise agreement claim is then
+To apply this result, establish error bounds $\lvert\delta_{\mathrm{ref}}\rvert\le\varepsilon_{\mathrm{ref}}$ and $\lvert\delta_{\mathrm{impl}}\rvert\le\varepsilon_{\mathrm{impl}}$, measured in output-code units. A conditional version of the bitwise agreement claim is then
 
 $$
 \begin{equation}
@@ -782,6 +782,7 @@ Decide which behavior a test is intended to enforce:
 | The exact quantization formula | Exact arithmetic where practical, or a reference with sufficient error analysis to establish the expected code. Compare codes exactly. |
 | A backend's specified integer arithmetic | Model its multiplier, shifts, accumulation width, rounding order, and saturation. Compare exactly where the contract requires it. |
 | A specification that permits numerical variation | Apply the specified per-operation tolerances and check model quality separately. |
+{: .table-text-wrap}
 
 LiteRT's [quantization specification](https://developers.google.com/edge/litert/conversion/tensorflow/quantization/quantization_spec) explicitly allows for hardware deviations from bit-exact behavior and discusses tests with per-operation tolerances. This does not make arbitrary discrepancies acceptable; it makes the chosen contract essential to interpreting a failure.
 
@@ -799,6 +800,7 @@ A reference comparison is most useful when failures reveal which assumption brok
 | Long dot products with large legal inputs | Overflow in products, accumulators, or zero-point corrections. |
 | Different input/output scales and channel parameters | Incorrect requantization or parameters applied along the wrong axis. |
 | The same integer output passed through each conversion path | Mismatched scales, data types, or dequantization behavior. |
+{: .table-text-wrap}
 
 Use independently checked quantization utilities for the reference. If both paths share a buggy helper, agreement can hide the defect. For a backend comparison, document the required arithmetic before choosing exact equality or a tolerance.
 
@@ -872,6 +874,7 @@ The first branch substitutes `Qx x` into integer correctness. The second applies
 | Equality to the ideal code under certified error bounds (14), in cell form | `quantized_paths_eq_of_error_bounds` |
 | Correctness-test equivalence (15) for a certified reference cell | `reference_test_iff_in_cell` |
 | Conditional one-code difference bound (16) | `quantized_difference_le_one`, `nearestEven_error_le_half` |
+{: .table-text-wrap}
 
 The rounding convention needs particular attention. Mathlib v4.24.0's [`round`](https://github.com/leanprover-community/mathlib4/blob/v4.24.0/Mathlib/Algebra/Order/Round.lean) rounds halfway cases toward positive infinity. The companion defines `nearestEven` separately and proves that it preserves integers and rounds points inside each open nearest-integer cell to its center. It also checks the counterexample to moving an integer zero point outside ties-to-even rounding.
 
@@ -886,7 +889,7 @@ $$
 
 The stability theorem proves that errors whose magnitudes are strictly below this margin leave both rounded results equal to $n$. The certified-bound and reference-test lemmas use the same explicit margin, and the reference-test lemma makes no correctness assumption about the candidate output. Inside the cell, the margin is the distance to the nearest half-integer boundary in Equation (13). The project checks these explicit-margin statements; the identification with the distance-to-a-set notation is not itself formalized.
 
-The one-code bound is proved from the nearest-rounding error bound $|R(u)-u|\le1/2$ and the fact that clipping cannot enlarge a difference. The project also proves this rounding bound for `nearestEven` and checks the two-code difference at the excluded endpoint $|a-b|=1$.
+The one-code bound is proved from the nearest-rounding error bound $\lvert R(u)-u\rvert\le1/2$ and the fact that clipping cannot enlarge a difference. The project also proves this rounding bound for `nearestEven` and checks the two-code difference at the excluded endpoint $\lvert a-b\rvert=1$.
 
 The scope of the machine check follows the types: `ℝ` denotes exact real arithmetic, and `ℤ` denotes unbounded integers. Numerical error bounds enter the new theorems as hypotheses; the proofs do not derive them for a NumPy or device implementation. The formalization checks the two integer-rounding results in the FP32 example; the IEEE-754 addition that produces $0.5$ is demonstrated by the Python example and is not formalized here. Verifying a particular device kernel additionally requires a model of its arithmetic, overflow behavior, rounding order, and data access.
 
