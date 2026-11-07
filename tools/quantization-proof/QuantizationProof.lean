@@ -25,8 +25,8 @@ about IEEE-754 evaluation, fixed-width overflow, or a particular device kernel.
 The stability lemma uses explicit open rounding cells, rather than formalizing
 the article's distance-to-a-set notation. Its error bounds are hypotheses, not
 computed bounds for an IEEE-754 program. The file also proves the reference-test
-equivalence and the conditional one-code difference bound. The final commands
-report axioms.
+equivalence, the conditional one-code difference bound, and a generic monotone
+interval certificate. The final commands report axioms.
 -/
 
 namespace QuantizationProof
@@ -285,6 +285,29 @@ theorem quantized_difference_le_one (R : ℝ → ℤ)
   have hone : |R a - R b| ≤ (1 : ℤ) := by omega
   exact le_trans (clip_nonexpansive lo hi (R a) (R b)) hone
 
+/-- Equation (17). A nondecreasing quantizer preserves an interval enclosure. -/
+theorem quantizer_interval_enclosure
+    {α β : Type*} [Preorder α] [Preorder β]
+    (Q : α → β) (hQ : Monotone Q) {a r b : α}
+    (har : a ≤ r) (hrb : r ≤ b) :
+    Q a ≤ Q r ∧ Q r ≤ Q b :=
+  ⟨hQ har, hQ hrb⟩
+
+/-- Equation (18), for any point of the interval. The numerical enclosure,
+monotonicity, and endpoint codes are hypotheses, independent of any kernel. -/
+theorem quantizer_interval_certificate
+    {α β : Type*} [Preorder α] [PartialOrder β]
+    (Q : α → β) (hQ : Monotone Q) {a r b : α} {c : β}
+    (har : a ≤ r) (hrb : r ≤ b) (ha : Q a = c) (hb : Q b = c) :
+    Q r = c := by
+  apply le_antisymm
+  · calc
+      Q r ≤ Q b := hQ hrb
+      _ = c := hb
+  · calc
+      c = Q a := ha.symm
+      _ ≤ Q r := hQ har
+
 /-- Explicit ties-to-even: Mathlib's `round` uses a different tie convention. -/
 noncomputable def nearestEven (x : ℝ) : ℤ :=
   let n := Int.floor x
@@ -362,6 +385,8 @@ theorem exact_sum_and_half_round_differ :
 #print axioms reference_test_iff_in_cell
 #print axioms clip_nonexpansive
 #print axioms quantized_difference_le_one
+#print axioms quantizer_interval_enclosure
+#print axioms quantizer_interval_certificate
 #print axioms nearestEven_int
 #print axioms nearestEven_in_cell
 #print axioms nearestEven_error_le_half

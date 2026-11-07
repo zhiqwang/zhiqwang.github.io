@@ -11,6 +11,16 @@ mermaid: true
 
 {::options smart_quotes="apos,apos,quot,quot" /}
 
+## Abstract.
+
+Testing a quantized operator asks whether it follows the intended calculation. Measuring model accuracy asks how much quantization changes predictions. A fair reference starts from the same stored integer inputs, converts them back to the values they represent, performs the operation, and quantizes the result. Under exact arithmetic, we prove that matching this reference for every legal input is equivalent to matching the forward computation simulated by fake quantization.
+
+Real machines also round intermediate results. Near a rounding boundary, a tiny difference can change the final integer code, so shared inputs alone do not guarantee bitwise equality. The implementation and reference need agreed rules for scaling, rounding, clipping, and intermediate arithmetic. The reference's expected code must also be justified.
+
+A simple deterministic check uses a lower and an upper bound known to contain the exact result. If increasing the input never decreases the output code, and both endpoints produce the same code, that code is correct throughout the interval. Examples and Lean proofs make these assumptions explicit. Passing sampled tests establishes agreement on the inputs checked; correctness over the full domain needs exhaustive testing or a separate proof.
+
+## Introduction
+
 A quantized neural network deliberately changes the numbers it computes with. That makes testing surprisingly subtle: when an output differs from the original model, how do we tell whether the difference is expected quantization error or an implementation bug?
 
 Start by giving the implementation and its reference **the same represented inputs and an explicit numerical contract**. That contract includes the output quantization rule and the arithmetic used to compute it. Matching the inputs and final rounding rule alone does not guarantee bitwise agreement. Measuring how much quantization affects the model's predictions is a separate, equally useful test.
@@ -77,7 +87,7 @@ The formula $D(z)=0$ gives a legal representation of zero only when $z\in C$. Th
 For a small example, use $s=0.25$, $z=4$, and integer codes from $0$ through $15$. The represented real values range from $-1$ to $2.75$.
 
 | Original value $x$ | Stored code $Q(x)$ | Represented value $D(Q(x))$ |
-| --- | --- | --- |
+| ---: | ---: | ---: |
 | $-0.4$ | $2$ | $-0.5$ |
 | $0$ | $4$ | $0$ |
 | $0.6$ | $6$ | $0.5$ |
@@ -102,6 +112,8 @@ The notation used throughout the article is:
 For tensors, quantization acts element by element. Quantized weights and biases count as inputs too, each with their own parameters. The notation initially uses one scale and zero point per tensor. The equivalence proof also applies to fixed parameters per channel, provided every element uses the correct positive scale and zero point.
 
 The placement of rounding is part of the specification. This article puts $z$ inside $R$. Moving it outside can change halfway cases under ties-to-even rounding: $R(0.5+1)=2$, while $R(0.5)+1=1$. A reference must follow the convention of the implementation being tested.
+
+This distinction also appears in [PyTorch's quantized convolution tests, v2.5.1][pytorch-convolution]. Their comments give a ties-to-even example in which changing the order of rounding and zero-point addition changes the result by one code. Those tests explicitly accommodate that difference with `decimal=0`. This is a comparison policy for those tests, not a general allowance for one-code errors in quantized kernels.
 
 ### What survives a round trip?
 
@@ -182,6 +194,8 @@ $$
 
 **Equation (2) defines the ideal quantized operation.** An implementation satisfies it only if its computation matches the specified scaling, rounding, and clipping. Choosing an integer data type alone gives no such guarantee.
 
+An executable example of this reference structure is [PyTorch v2.5.1's `test_qmatmul`][pytorch-qmatmul]: it dequantizes the quantized operands, applies `torch.matmul`, requantizes the result, and compares integer codes with the quantized operator's output. This illustrates the testing pattern; passing those generated cases does not establish correctness for every legal input.
+
 An executable reference must implement the chosen contract. Exact rational arithmetic can evaluate Equation (2) for rational scales and operations such as addition and multiplication. Using floating-point operations requires justification that numerical errors cannot change the expected code. A backend emulator can instead model a different, explicitly specified arithmetic contract.
 
 ## Equivalence to fake quantization in exact arithmetic
@@ -200,6 +214,8 @@ Q_y\left(f(D_x(Q_x(x)))\right)
 $$
 
 Read this from the inside outward: encode the input, decode it onto the grid, apply the operation, encode the output, and decode that output onto its grid.
+
+[Wu et al.][wu-integer-quantization] define fake quantization as a quantize-then-dequantize operation in Section 5.2, Equation (12), and relate simulated matrix multiplication to its integer implementation in Section 3.2. [MLIR's quantization design][mlir-quantization] likewise converts `fake_quant` operations to `qcast` followed by `dcast` and describes replacing a `DQ → op → Q` pattern with a quantized operation. These sources establish the context for the construction; the proof below states the round-trip and injectivity assumptions needed for the exact equivalence.
 
 Integer inference followed by output dequantization gives
 
@@ -302,6 +318,8 @@ The theorem specifies what an implementation should do. To prove a particular im
 ### Matrix multiplication with bias
 
 A dense neural-network layer computes $XW+b$. Let $X$ have shape $m\times p$, $W$ have shape $p\times n$, and the bias $b$ contain one value for each of the $n$ output columns. Each output entry sums $p$ products and adds a bias.
+
+The affine arithmetic below follows the integer-inference construction in [Jacob et al., Sections 2.2–2.4][jacob-quantization], which derives the scale and zero-point transformations for integer matrix multiplication and fused layers.
 
 Let the integer encodings be $A$, $B$, and $c$. For this derivation, each tensor has one scale and zero point:
 
@@ -737,7 +755,7 @@ K(q)=K_{\mathrm{spec}}(q).
 \end{equation}
 $$
 
-This result assumes no correctness property or error bound for $K$. Once the reference code is certified, a matching result establishes correctness for that input, and a mismatch establishes failure to implement the exact specification for that input. Reference certification may use exact arithmetic or a rigorously bounded interval containing $t$: if every value in that interval quantizes to the reference's code, that code is justified.
+This result assumes no correctness property or error bound for $K$. Once the reference code is certified, a matching result establishes correctness for that input, and a mismatch establishes failure to implement the exact specification for that input. Reference certification may use exact arithmetic or the [deterministic interval certificate](#a-deterministic-interval-certificate) below.
 
 The equivalence applies input by input wherever reference validity has been proved. Passing a tested subset $T$ of those inputs establishes agreement on $T$; correctness on the full domain still requires exhaustive coverage or a separate proof.
 
@@ -771,9 +789,48 @@ The left side is an integer and is therefore at most $1$. Applying the same clip
 
 The strict premise matters here too: with ties-to-even, $a=0.5$ and $b=1.5$ are one unit apart but round to $0$ and $2$. If the output range contains both codes, clipping preserves that difference. Equation (16) therefore provides a conditional difference bound, not a general allowance for one-code discrepancies. It compares the two paths without establishing either one's correctness relative to the ideal specification.
 
+### A deterministic interval certificate
+
+The following elementary result certifies an expected output code from an interval. Its statement and proof use only order properties.
+
+**Proposition.** Let $C$ be a nonempty set of integer codes with its usual order, and let $Q:\mathbb R\to C$ be a fixed, nondecreasing quantizer: $u\le v$ implies $Q(u)\le Q(v)$. Let $r$ be the exact scalar value to quantize, and suppose independently established finite bounds satisfy $a\le r\le b$. Then
+
+$$
+\begin{equation}
+Q(a)\le Q(r)\le Q(b).
+\tag{17}
+\end{equation}
+$$
+
+If the endpoint codes coincide, $Q(a)=Q(b)=c$, the quantizer is constant on the entire interval:
+
+$$
+\begin{equation}
+\boxed{\forall u\in[a,b],\quad Q(u)=c.}
+\tag{18}
+\end{equation}
+$$
+
+**Proof.** For any $u\in[a,b]$, monotonicity gives $Q(a)\le Q(u)\le Q(b)$. When both endpoints equal $c$, this becomes $c\le Q(u)\le c$, so $Q(u)=c$. Taking $u=r$ gives the certified expected code. No distributional or probabilistic assumption is needed.
+
+The affine quantizer $Q_{s,z}(x)=\operatorname{clip}(R(x/s+z))$ satisfies the monotonicity hypothesis when its parameters are fixed, $s>0$, and $R$ is nondecreasing. Scale conversion, zero-point addition, rounding, and clipping then each preserve order. Standard nearest-integer rounding with a fixed tie convention, including ties-to-even, has this property. Integer-preserving rounding alone, as assumed for the earlier round-trip theorem, does not imply monotonicity; it is an explicit extra hypothesis here.
+
+To use the certificate as a test oracle, establish the bounds and the endpoint codes independently of the candidate kernel. If the endpoints both give $c$, comparing the candidate's code with $c$ tests the exact quantization contract for that input, without assuming that the candidate is correct. If the endpoint codes differ, Equation (17) can still reject codes outside their range, but a code inside the range is not thereby certified as correct. For tensors, apply the argument to every output element.
+
+The bounds must enclose the ideal value rigorously, and endpoint quantization must follow the specified arithmetic and tie rule. Interval arithmetic with outward rounding or exact rational arithmetic can provide such evidence; an ordinary floating-point evaluation of the endpoints needs its own justification. The proposition does not calculate those bounds.
+
+For a self-contained example, take $Q$ to round to nearest with ties to even and clip to the signed 8-bit range $[-128,127]$, with scale $1$ and zero point $0$. Suppose a separate analysis encloses $r$ in $[\widehat r-\eta,\widehat r+\eta]$, where $\widehat r=\tfrac12+2^{-26}$.
+
+- With $\eta=2^{-27}$, the endpoints are $\tfrac12+2^{-27}$ and $\tfrac12+3\cdot2^{-27}$. Both round to $1$, certifying that output code for every value in the interval.
+- With $\eta=2^{-26}$, the endpoints are $\tfrac12$ and $\tfrac12+2^{-25}$. They quantize to $0$ and $1$, respectively. This interval does not determine a unique expected code; additional information about $r$ would be needed.
+
+The same proof covers saturation plateaus. With this quantizer, $Q(128)=Q(130)=127$, so every real value in $[128,130]$ quantizes to $127$, even though the interval crosses integer-rounding boundaries.
+
 ### The backend may specify another arithmetic path
 
 A deployment kernel may approximate a real scale ratio with an integer multiplier and a shift. The [gemmlowp implementation documentation](https://github.com/google/gemmlowp/blob/master/doc/quantization.md#implementation-of-quantized-matrix-multiplication) explains this approach. Such a kernel has additional rounding decisions that the exact formula alone does not describe.
+
+[Jacob et al., Appendix B][jacob-quantization] give a concrete hardware example: the tie handling of ARM's `RSHL` instruction differs from their intended right-shift semantics and requires correction. Specifying the arithmetic therefore includes the behavior of the instructions used to implement it.
 
 Decide which behavior a test is intended to enforce:
 
@@ -806,6 +863,8 @@ Use independently checked quantization utilities for the reference. If both path
 
 The operator boundaries must also match. If the implementation fuses matrix multiplication and an activation, construct a reference with the same intermediate rounding behavior. The unfused model's outputs can still be useful for model-quality evaluation, but they need not define the fused kernel's exact output codes.
 
+[Nagel et al., Sections 2.3.2–2.3.3][nagel-white-paper] discuss activation fusion and hardware-dependent modeling of layers, including differences between simulated quantization and deployment behavior. These are reasons to check that the reference models the computation promised by the target implementation.
+
 ## What unit tests establish
 
 A proof quantifies over a domain; a test executes selected cases. Let $\Omega$ be the legal input domain and $T$ the tested subset. If $T$ does not cover $\Omega$, then
@@ -828,6 +887,15 @@ Here $K_{\mathrm{spec}}$ denotes the chosen reference contract, and $\not\Righta
 The ReLU example exhausts a small scalar domain for fixed parameters. Its algebraic proof covers all parameter choices satisfying the stated assumptions. For matrix multiplication, exhaustive tensor inputs are usually impractical, so algebraic derivation, boundary cases, randomized comparisons, and checks of the actual machine arithmetic provide complementary evidence.
 
 Shared-input references test a specified numerical contract. Their expected equality must be justified by that contract and the arithmetic of both paths. A correct kernel can still belong to a model with poor prediction accuracy, and a model with good accuracy can still hide a kernel bug. Writing down the numerical contract lets each test answer a precise question.
+
+## Related work and references
+
+The Q/DQ construction and integer arithmetic used here have an established basis in quantization research and framework implementations. The following papers provide context for the numerical constructions and testing questions discussed here. Equations (4), (14), and (15) remain mathematical implications under this article's stated assumptions; the cited simulation schemes and framework tests do not establish an unconditional bitwise-agreement guarantee for arbitrary floating-point reference programs.
+
+1. **Benoit Jacob et al.**, [*Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference*][jacob-quantization], arXiv:1712.05877 (2017). Sections 2.2–2.4 develop integer matrix multiplication, zero-point corrections, and fused-layer arithmetic; Section 3 describes simulated quantization. Appendix B discusses instruction-level rounding details.
+2. **Hao Wu et al.**, [*Integer Quantization for Deep Learning Inference: Principles and Empirical Evaluation*][wu-integer-quantization], arXiv:2004.09602 (2020). Section 3.2 derives integer matrix multiplication from quantized operands, and Section 5.2 explicitly defines fake quantization through quantization and dequantization.
+3. **Markus Nagel et al.**, [*A White Paper on Neural Network Quantization*][nagel-white-paper], arXiv:2106.08295 (2021). Section 2.3 explains quantization simulation, activation fusion, and modeling choices that affect agreement with deployed quantized computation.
+4. **Xinyi Shi**, [*Beyond atol and rtol: Sound Test Oracles for Low-Precision GPU Kernels*][shi-test-oracles], arXiv:2610.38983. Section 4.8 and Lemma 5.2 relate numerical error bounds to intervals of possible outputs after final floating-point rounding, under explicit arithmetic and implementation assumptions. The connection to Equations (13)–(15) is the use of error bounds and rounding intervals to evaluate an implementation's outputs; the paper's results concern floating-point output intervals rather than the integer-code agreement studied here.
 
 ## Appendix: checking the proof with Lean
 
@@ -874,6 +942,7 @@ The first branch substitutes `Qx x` into integer correctness. The second applies
 | Equality to the ideal code under certified error bounds (14), in cell form | `quantized_paths_eq_of_error_bounds` |
 | Correctness-test equivalence (15) for a certified reference cell | `reference_test_iff_in_cell` |
 | Conditional one-code difference bound (16) | `quantized_difference_le_one`, `nearestEven_error_le_half` |
+| Deterministic interval enclosure and endpoint certificate (17), (18) | `quantizer_interval_enclosure`, `quantizer_interval_certificate` |
 {: .table-text-wrap}
 
 The rounding convention needs particular attention. Mathlib v4.24.0's [`round`](https://github.com/leanprover-community/mathlib4/blob/v4.24.0/Mathlib/Algebra/Order/Round.lean) rounds halfway cases toward positive infinity. The companion defines `nearestEven` separately and proves that it preserves integers and rounds points inside each open nearest-integer cell to its center. It also checks the counterexample to moving an integer zero point outside ties-to-even rounding.
@@ -890,6 +959,8 @@ $$
 The stability theorem proves that errors whose magnitudes are strictly below this margin leave both rounded results equal to $n$. The certified-bound and reference-test lemmas use the same explicit margin, and the reference-test lemma makes no correctness assumption about the candidate output. Inside the cell, the margin is the distance to the nearest half-integer boundary in Equation (13). The project checks these explicit-margin statements; the identification with the distance-to-a-set notation is not itself formalized.
 
 The one-code bound is proved from the nearest-rounding error bound $\lvert R(u)-u\rvert\le1/2$ and the fact that clipping cannot enlarge a difference. The project also proves this rounding bound for `nearestEven` and checks the two-code difference at the excluded endpoint $\lvert a-b\rvert=1$.
+
+The interval-certificate lemmas are generic order arguments and take monotonicity as an explicit hypothesis. They do not derive a numerical enclosure or certify floating-point evaluation of its endpoint codes.
 
 The scope of the machine check follows the types: `ℝ` denotes exact real arithmetic, and `ℤ` denotes unbounded integers. Numerical error bounds enter the new theorems as hypotheses; the proofs do not derive them for a NumPy or device implementation. The formalization checks the two integer-rounding results in the FP32 example; the IEEE-754 addition that produces $0.5$ is demonstrated by the Python example and is not formalized here. Verifying a particular device kernel additionally requires a model of its arithmetic, overflow behavior, rounding order, and data access.
 
@@ -908,4 +979,12 @@ lake build
 lake env lean QuantizationProof.lean
 ```
 
-The final command also prints the axiom dependencies of the main theorems. The abstract `correct_iff_fake` theorem depends on no axioms. The reported concrete arithmetic proofs use Lean's standard `propext`, `Classical.choice`, and `Quot.sound`; none reports `sorryAx`. This checks the stated mathematical implications for all inputs satisfying their hypotheses. Checking a deployed kernel still requires evidence that its actual computation implements the formal specification.
+The final command also prints the axiom dependencies of the main theorems. The abstract `correct_iff_fake` theorem and the two generic interval-certificate lemmas depend on no axioms. The reported concrete arithmetic proofs use Lean's standard `propext`, `Classical.choice`, and `Quot.sound`; none reports `sorryAx`. This checks the stated mathematical implications for all inputs satisfying their hypotheses. Checking a deployed kernel still requires evidence that its actual computation implements the formal specification.
+
+[pytorch-qmatmul]: https://github.com/pytorch/pytorch/blob/v2.5.1/test/quantization/core/test_quantized_op.py#L1180-L1189
+[pytorch-convolution]: https://github.com/pytorch/pytorch/blob/v2.5.1/test/quantization/core/test_quantized_op.py#L5100-L5117
+[mlir-quantization]: https://mlir.llvm.org/docs/Quantization/#integration-with-simulated-quantization-at-training-time
+[jacob-quantization]: https://arxiv.org/html/1712.05877v1
+[wu-integer-quantization]: https://arxiv.org/html/2004.09602v1
+[nagel-white-paper]: https://arxiv.org/html/2106.08295v1
+[shi-test-oracles]: https://arxiv.org/html/2610.38983v1
