@@ -23,6 +23,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  quantization-proof:
+    uses: ./.github/workflows/quantization-proof.yml
+    permissions:
+      contents: read
+
   build:
     runs-on: ubuntu-latest
 
@@ -66,7 +71,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, quantization-proof]
     steps:
       - name: Deploy to GitHub Pages
         id: deployment

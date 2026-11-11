@@ -11,13 +11,12 @@ import Mathlib.Tactic.Ring
 Formal companion to `_posts/2026-09-05-quantization-unit-tests-proof.md`.
 
 Run from this directory with Lean 4.24.0:
-  MATHLIB_NO_CACHE_ON_UPDATE=1 lake update
-  lake exe cache get Mathlib.Data.Real.Archimedean Mathlib.Data.Rat.Floor \
+  MATHLIB_NO_CACHE_ON_UPDATE=1 lake exe cache get Mathlib.Data.Real.Archimedean Mathlib.Data.Rat.Floor \
     Mathlib.Algebra.Order.Floor.Ring Mathlib.Algebra.BigOperators.Fin \
     Mathlib.Tactic.FieldSimp Mathlib.Tactic.Linarith \
     Mathlib.Tactic.NormNum Mathlib.Tactic.Ring
   lake build
-  lake env lean QuantizationProof.lean
+  lake env lean -DwarningAsError=true QuantizationProof.lean
 
 The code domains contain only legal codes. All arithmetic below is exact;
 Int is unbounded, and Real is mathematical real arithmetic. No claim is made
@@ -26,7 +25,9 @@ The stability lemma uses explicit open rounding cells, rather than formalizing
 the article's distance-to-a-set notation. Its error bounds are hypotheses, not
 computed bounds for an IEEE-754 program. The file also proves the reference-test
 equivalence, the conditional one-code difference bound, and a generic monotone
-interval certificate. The final commands report axioms.
+interval certificate, with monotonicity proved for nearest-even affine encoding.
+The final commands report axioms. Python enclosure generation and backend models
+are tested separately; they are not verified by this file.
 -/
 
 namespace QuantizationProof
@@ -344,6 +345,30 @@ theorem nearestEven_error_le_half (x : ℝ) : |(nearestEven x : ℝ) - x| ≤ 1 
   split_ifs <;> simp only [Int.cast_add, Int.cast_one, abs_le] <;>
     constructor <;> linarith
 
+/-- Nearest-even is monotone, including negative inputs and exact ties. -/
+theorem nearestEven_monotone : Monotone nearestEven := by
+  intro a b hab
+  rcases eq_or_lt_of_le hab with h | h
+  · rw [h]
+  · by_contra hnot
+    have hstep : nearestEven b + 1 ≤ nearestEven a := by omega
+    have hreal : (nearestEven b : ℝ) + 1 ≤ (nearestEven a : ℝ) := by
+      exact_mod_cast hstep
+    have ha := (abs_le.mp (nearestEven_error_le_half a)).2
+    have hb := (abs_le.mp (nearestEven_error_le_half b)).1
+    linarith
+
+/-- Positive scale, monotone rounding and clipping make encoding monotone. -/
+theorem Affine.encode_monotone (a : Affine) (hR : Monotone a.rounding) :
+    Monotone (fun x => (a.encode x).val) := by
+  intro x y hxy
+  change clip a.qmin a.qmax (a.rounding (x / a.scale + a.zeroPoint)) ≤
+    clip a.qmin a.qmax (a.rounding (y / a.scale + a.zeroPoint))
+  apply min_le_min_left
+  apply max_le_max_left
+  apply hR
+  exact add_le_add_right (div_le_div_of_nonneg_right hxy a.scale_pos.le) _
+
 /-- A pre-rounding distance of exactly one can produce a two-code difference. -/
 theorem one_unit_endpoint_can_differ_by_two :
     |nearestEven (3 / 2) - nearestEven (1 / 2)| = 2 := by
@@ -360,6 +385,20 @@ noncomputable def nearestEvenAffine (s : ℝ) (hs : 0 < s)
   range_nonempty := hrange
   rounding := nearestEven
   rounding_int := nearestEven_int
+
+/-- The interval certificate instantiated with the article's actual quantizer.
+Only the enclosure and endpoint codes remain hypotheses. -/
+theorem nearestEvenAffine_interval_certificate
+    (s : ℝ) (hs : 0 < s) (z lo hi : ℤ) (hrange : lo ≤ hi)
+    {a r b : ℝ} {c : (nearestEvenAffine s hs z lo hi hrange).Code}
+    (har : a ≤ r) (hrb : r ≤ b)
+    (ha : (nearestEvenAffine s hs z lo hi hrange).encode a = c)
+    (hb : (nearestEvenAffine s hs z lo hi hrange).encode b = c) :
+    (nearestEvenAffine s hs z lo hi hrange).encode r = c := by
+  apply Subtype.ext
+  exact quantizer_interval_certificate _
+    (Affine.encode_monotone (nearestEvenAffine s hs z lo hi hrange) nearestEven_monotone)
+    har hrb (congrArg Subtype.val ha) (congrArg Subtype.val hb)
 
 theorem ties_even_not_translation_invariant :
     nearestEven ((1 / 2 : ℝ) + 1) ≠ nearestEven (1 / 2) + 1 := by
@@ -390,6 +429,9 @@ theorem exact_sum_and_half_round_differ :
 #print axioms nearestEven_int
 #print axioms nearestEven_in_cell
 #print axioms nearestEven_error_le_half
+#print axioms nearestEven_monotone
+#print axioms Affine.encode_monotone
+#print axioms nearestEvenAffine_interval_certificate
 #print axioms one_unit_endpoint_can_differ_by_two
 #print axioms ties_even_not_translation_invariant
 #print axioms exact_sum_and_half_round_differ

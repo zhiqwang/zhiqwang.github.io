@@ -1,6 +1,7 @@
 ---
 title: 'Testing Quantized Operators: From First Principles to Mathematical Proof'
 date: 2026-09-05 13:25:00 +0800
+last_modified_at: 2026-11-11 22:46:00 +0800
 permalink: /posts/quantization-unit-tests-proof/
 description: 'Prove the exact reference contract for quantized operators and understand why matching inputs does not guarantee bitwise agreement with a floating-point reference.'
 categories: [Machine Learning]
@@ -197,6 +198,26 @@ $$
 An executable example of this reference structure is [PyTorch v2.5.1's `test_qmatmul`][pytorch-qmatmul]: it dequantizes the quantized operands, applies `torch.matmul`, requantizes the result, and compares integer codes with the quantized operator's output. This illustrates the testing pattern; passing those generated cases does not establish correctness for every legal input.
 
 An executable reference must implement the chosen contract. Exact rational arithmetic can evaluate Equation (2) for rational scales and operations such as addition and multiplication. Using floating-point operations requires justification that numerical errors cannot change the expected code. A backend emulator can instead model a different, explicitly specified arithmetic contract.
+
+### Preserve the stored scale, not just its printed decimal
+
+If the contract takes FP32 scale metadata, the exact reference must use the rational value of those stored bits. The decimal string `"0.1"` and the FP32 value printed as `0.1` denote different numbers. This difference can change a reference code even when every later calculation is exact:
+
+```python
+from fractions import Fraction
+import struct
+
+stored_scale = struct.unpack("<f", struct.pack("<f", 0.1))[0]
+decimal_scale = Fraction("0.1")
+binary_scale = Fraction.from_float(stored_scale)
+
+# Input code 5; zero points 0; output scale 1; no clipping needed.
+assert round(5 * decimal_scale) == 0  # Exactly 1/2, a ties-to-even case.
+assert round(5 * binary_scale) == 1   # Strictly above 1/2.
+print(binary_scale)                  # 13421773/134217728
+```
+
+Widening an FP32 value to a Python float preserves it exactly. With NumPy metadata, use `Fraction.from_float(float(scale32))`; avoid reconstructing the scale from its printed string or applying `limit_denominator()`. [Python's `Fraction` documentation](https://docs.python.org/3.10/library/fractions.html) distinguishes conversion of a stored float from conversion of a decimal string. A contract can instead specify an exact decimal or rational scale, but that is a different input parameter. The [executable oracle](https://github.com/zhiqwang/zhiqwang.github.io/blob/main/tools/quantization-proof/oracle.py) accepts explicit `Fraction` values and preserves finite Python floats exactly.
 
 ## Equivalence to fake quantization in exact arithmetic
 
@@ -399,6 +420,32 @@ The factor $s_Xs_W/s_Y$ converts the accumulator into output-code units. This co
 An implementation satisfies the ideal specification if it computes Equation (6) without unintended overflow and performs Equation (7) with the required arithmetic. Both conditions matter: low-bit inputs do not imply that their products or sums fit in the same low-bit type. Widening must also happen before a subtraction or multiplication that could overflow.
 
 A useful special case is $s_b=s_Xs_W$ and $z_b=0$, which puts the bias in the same units as the accumulator. LiteRT's [8-bit quantization specification](https://developers.google.com/edge/litert/conversion/tensorflow/quantization/quantization_spec) uses this relationship for convolution biases. The general formula above allows other bias parameters.
+
+#### A checkable accumulation bound
+
+For the direct centered dot product, define
+
+$$
+\begin{aligned}
+M_X&=\max_{a\in C_X}|a-z_X|,\\
+M_W&=\max_{b\in C_W}|b-z_W|.
+\end{aligned}
+$$
+
+Assume the widened operands and centered subtractions fit the chosen signed type. For a nonempty dot product with bias code $c$ already in accumulator units, a conservative sufficient condition for signed 32-bit products, every accumulation prefix, and the final bias addition to fit is
+
+$$
+\begin{equation}
+pM_XM_W+|c|\le 2^{31}-1.
+\notag
+\end{equation}
+$$
+
+Each product has magnitude at most $M_XM_W$, and a prefix of length $k\le p$ has magnitude at most $kM_XM_W$. This proves the bound for the entire direct accumulation path, including cancellation cases. The symmetric bound is conservative: it does not use the extra negative value $-2^{31}$ available in INT32. With a different bias scale, analyze the bias conversion separately.
+
+For INT8 operands and in-range INT8 zero points, the worst-case centered magnitudes are both $255$. With zero bias, $p=33025$ satisfies this bound, while $p=33026$ can overflow. The companion's `centered_dot_bound` calculates this sufficient bound; `checked_centered_dot` separately checks each actual subtraction, product, sum and bias addition using Python integers before accepting it as an INT32 operation.
+
+The expanded expression in Equation (6) needs bounds for its own intermediate terms. For example, in signed 16-bit arithmetic, three pairs with $A_k=B_k=z_X=z_W=127$ have centered dot product zero, but the expanded raw dot product is $3\cdot127^2=48387$, which does not fit. Later correction or clipping cannot repair an earlier overflow. The tests include this case and a case where later bias cancellation would conceal a prefix overflow.
 
 ### ReLU
 
@@ -627,6 +674,7 @@ rounded_sum = fp32(fp32(0.5) + fp32(2.0**-26))
 
 print(round(exact_sum))    # 1: quantize the exact sum
 print(round(rounded_sum))  # 0: quantize after FP32 rounding
+assert round(exact_sum) == 1 and round(rounded_sum) == 0
 ```
 
 The explicit `fp32` conversion after addition models the FP32 result for these particular values. The example demonstrates two rounding stages: rounding the sum to a floating-point value, then rounding that value to an integer code. Even exactly represented inputs do not eliminate intermediate rounding error.
@@ -653,7 +701,18 @@ The represented computation is again $\tfrac12\cdot1+2^{-26}$. Calling Lei Mao's
 
 All inputs decode exactly in this example, and neither integer overflow nor output saturation occurs. The reference loses the small bias during FP32 addition. With these arguments and this NumPy version, the quantized path evaluates its scaled accumulator in FP64 and retains the bias until integer rounding. It matches the exact specification for this input, while both output-equality assertions fail. These are different legal parameters from the article's original random example; the result does not claim that its original sample fails.
 
-A [standalone reproduction](https://github.com/zhiqwang/zhiqwang.github.io/blob/main/tools/quantization-proof/leimao_gemm_counterexample.py) implements these two paths for the zero-point-zero case. From the repository root, with `uv` installed, run:
+The discrepancy also occurs when the bias uses accumulator units, $s_b=s_Xs_W$, with an INT32 bias code. Take a dot product of length $p=2048$, set all input codes to $-128$, all weight codes to $-64$, the bias code to $1$, and every zero point to zero. Choose $s_X=s_b=2^{-25}$ and $s_W=s_Y=1$. Then
+
+$$
+\begin{aligned}
+T&=2048\cdot(-128)\cdot(-64)=2^{24},\\
+r&=2^{-25}(T+1)=\tfrac12+2^{-25}.
+\end{aligned}
+$$
+
+Both the dot product and the bias-adjusted integer accumulator fit INT32. The decoded products are powers of two and sum exactly to $0.5$ in this example. Adding the decoded bias lands halfway between adjacent FP32 values, so nearest-even floating-point addition returns $0.5$. The exact output code is `1`; the FP32 reference code is `0`. Thus the discrepancy survives the common bias-scale constraint; it does not depend on using an independently scaled bias.
+
+A [standalone reproduction](https://github.com/zhiqwang/zhiqwang.github.io/blob/main/tools/quantization-proof/leimao_gemm_counterexample.py) implements the zero-point-zero computation paths for both cases and checks their codes against the exact oracle. From the repository root, with `uv` installed, run:
 
 ```sh
 uv run --no-project --python 3.10 --with numpy==1.26.4 \
@@ -826,6 +885,40 @@ For a self-contained example, take $Q$ to round to nearest with ties to even and
 
 The same proof covers saturation plateaus. With this quantizer, $Q(128)=Q(130)=127$, so every real value in $[128,130]$ quantizes to $127$, even though the interval crosses integer-rounding boundaries.
 
+### An executable GEMM certificate
+
+The companion [oracle implementation](https://github.com/zhiqwang/zhiqwang.github.io/blob/main/tools/quantization-proof/oracle.py) makes the enclosure construction explicit for rational GEMM. It accepts nonempty integer matrices and fixed quantizers, with separate weight, bias and output parameters for each output column. It validates shapes, legal input codes, positive finite scales and nonempty code ranges.
+
+For each output, it computes the centered dot product $T$ using unbounded Python integers. At precision $b$, it encloses a rational coefficient $v$ by outward rounding onto a dyadic grid:
+
+$$
+\begin{equation}
+I_b(v)=\left[\frac{\lfloor 2^b v\rfloor}{2^b},\frac{\lceil 2^b v\rceil}{2^b}\right].
+\notag
+\end{equation}
+$$
+
+The decoded result is enclosed by $T I_b(s_Xs_W)+(c-z_b)I_b(s_b)$. Multiplication by a negative integer reverses the interval endpoints; interval addition adds lower endpoints and upper endpoints separately. All of these calculations use exact integers or `Fraction`, so they introduce no unaccounted floating-point rounding. The final quantizer evaluates both endpoints exactly, using the stored output scale. This encloses the ideal result; it is not an error model for FP32 accumulation.
+
+`check_gemm` returns one of three verdicts for each element and for the tensor:
+
+| Evidence | Verdict |
+| --- | --- |
+| Both endpoint codes are the candidate code | `pass` |
+| The candidate code is outside the endpoint-code range | `fail` |
+| Endpoint codes differ and the candidate lies within their range | `inconclusive` |
+{: .table-text-wrap}
+
+Any failing element makes the tensor fail; otherwise any inconclusive element makes the tensor inconclusive. With `exact_fallback=True`, unresolved elements are compared with a separate exact `DQ → products → sum + bias → Q` reference. This also resolves exact ties, for which repeatedly refining a non-singleton interval alone need not terminate. The result retains the original code bounds, the certified expected code when available, and whether interval reasoning or exact fallback decided it.
+
+Run the standard-library demonstration from the repository root:
+
+```sh
+python tools/quantization-proof/demo_oracle.py
+```
+
+For the $\tfrac12+2^{-26}$ example, 24-bit coefficient enclosures give code bounds `[0, 1]`. Candidate `0` is inconclusive, while candidate `2` fails immediately. At 27 bits the endpoints both give `1`. Exact fallback at 24 bits rejects candidate `0` and accepts candidate `1`. This is a small correctness reference, not a throughput-optimized GEMM implementation; exact fallback can be expensive for large tensors.
+
 ### The backend may specify another arithmetic path
 
 A deployment kernel may approximate a real scale ratio with an integer multiplier and a shift. The [gemmlowp implementation documentation](https://github.com/google/gemmlowp/blob/master/doc/quantization.md#implementation-of-quantized-matrix-multiplication) explains this approach. Such a kernel has additional rounding decisions that the exact formula alone does not describe.
@@ -844,6 +937,18 @@ Decide which behavior a test is intended to enforce:
 LiteRT's [quantization specification](https://developers.google.com/edge/litert/conversion/tensorflow/quantization/quantization_spec) explicitly allows for hardware deviations from bit-exact behavior and discusses tests with per-operation tolerances. This does not make arbitrary discrepancies acceptable; it makes the chosen contract essential to interpreting a failure.
 
 Using FP64 instead of FP32 can reduce reference error, but higher precision alone does not prove exact agreement for every input. A result sufficiently close to a rounding boundary still needs analysis.
+
+#### A concrete scalar backend arithmetic model
+
+The companion [gemmlowp model](https://github.com/zhiqwang/zhiqwang.github.io/blob/main/tools/quantization-proof/gemmlowp_model.py) specifies one path using the [upstream scalar INT32 primitives at revision `16e8662`](https://github.com/google/gemmlowp/blob/16e8662c34917be0065110bfcd9cc27d30f52fdf/fixedpoint/fixedpoint.h). It checks the centered accumulation and accumulator-unit bias, applies `SaturatingRoundingDoublingHighMul` with a nonnegative supplied multiplier, applies `RoundingDivideByPOT` with a supplied right shift from 0 to 31, adds the output zero point, then clips to INT8. Each non-saturating INT32 operation must fit. Multiplier selection and left shifts are outside this small model.
+
+The two primitives have different halfway rules: the high multiply resolves ties toward positive infinity, while the right shift resolves ties away from zero. For accumulator `1`, multiplier $2^{30}$ and right shift `1`, they produce `1` and then `1`. A single exact multiplication by the effective ratio $1/4$ followed by nearest-even rounding instead produces `0`. Both answers have a precise contract; replacing the backend's two stages with one rounding would change its behavior.
+
+The [upstream comparison](https://github.com/zhiqwang/zhiqwang.github.io/blob/main/tools/quantization-proof/check_gemmlowp.py) downloads headers from that immutable revision into a temporary directory, compiles a small C++ probe, and checks 2590 boundary and seeded cases against the Python model. It exercises the scalar rounding primitives and their composition, including negative ties, saturation and zero-point addition. It does not validate a deployed SIMD or device GEMM kernel. With `g++` and network access, run:
+
+```sh
+python tools/quantization-proof/check_gemmlowp.py
+```
 
 ## Turning the proof into useful tests
 
@@ -864,6 +969,19 @@ Use independently checked quantization utilities for the reference. If both path
 The operator boundaries must also match. If the implementation fuses matrix multiplication and an activation, construct a reference with the same intermediate rounding behavior. The unfused model's outputs can still be useful for model-quality evaluation, but they need not define the fused kernel's exact output codes.
 
 [Nagel et al., Sections 2.3.2–2.3.3][nagel-white-paper] discuss activation fusion and hardware-dependent modeling of layers, including differences between simulated quantization and deployment behavior. These are reasons to check that the reference models the computation promised by the target implementation.
+
+The [executable tests](https://github.com/zhiqwang/zhiqwang.github.io/blob/main/tools/quantization-proof/test_oracle.py) exhaust all INT8 codes for several quantizers and ReLU zero points, check positive and negative ties, clipping plateaus, exact fallback and malformed inputs, and exercise INT32 accumulation boundaries. Eighty seeded small GEMM configurations vary shapes, zero points and channel scales; their enclosures are checked against independently decoded rational results at three interval precisions. These samples supplement the proofs rather than extending their scope.
+
+The suite also deliberately omits a zero point, swaps channel parameters, changes a tie rule, rounds before adding bias, and wraps an output before clipping. Each mutation must be rejected on a targeted input. This checks fault detection as well as agreement on correct examples. The exact and interval paths share the output quantizer, so direct tests of its tie rule, scale interpretation, clipping and round-trip behavior remain necessary.
+
+Run the Python tests, both NumPy counterexamples, the oracle demonstration and every Python code block in this article with one command:
+
+```sh
+uv run --no-project --python 3.10 --with numpy==1.26.4 \
+  python tools/quantization-proof/verify.py --python-only
+```
+
+The [verification workflow](https://github.com/zhiqwang/zhiqwang.github.io/blob/main/.github/workflows/quantization-proof.yml) runs on relevant pull requests and is also a prerequisite of the site's deployment workflow. It runs the Python checks, the pinned upstream C++ comparison and Lean verification. Lean warnings fail the check, and the printed theorem dependencies are restricted to the standard `propext`, `Classical.choice` and `Quot.sound` axioms; `sorryAx` or an unexpected axiom fails the audit. Dependency verification uses the committed Lake manifest and checks that it remains unchanged.
 
 ## What unit tests establish
 
@@ -943,6 +1061,7 @@ The first branch substitutes `Qx x` into integer correctness. The second applies
 | Correctness-test equivalence (15) for a certified reference cell | `reference_test_iff_in_cell` |
 | Conditional one-code difference bound (16) | `quantized_difference_le_one`, `nearestEven_error_le_half` |
 | Deterministic interval enclosure and endpoint certificate (17), (18) | `quantizer_interval_enclosure`, `quantizer_interval_certificate` |
+| Monotonicity and the certificate for the concrete nearest-even affine quantizer | `nearestEven_monotone`, `Affine.encode_monotone`, `nearestEvenAffine_interval_certificate` |
 {: .table-text-wrap}
 
 The rounding convention needs particular attention. Mathlib v4.24.0's [`round`](https://github.com/leanprover-community/mathlib4/blob/v4.24.0/Mathlib/Algebra/Order/Round.lean) rounds halfway cases toward positive infinity. The companion defines `nearestEven` separately and proves that it preserves integers and rounds points inside each open nearest-integer cell to its center. It also checks the counterexample to moving an integer zero point outside ties-to-even rounding.
@@ -960,26 +1079,26 @@ The stability theorem proves that errors whose magnitudes are strictly below thi
 
 The one-code bound is proved from the nearest-rounding error bound $\lvert R(u)-u\rvert\le1/2$ and the fact that clipping cannot enlarge a difference. The project also proves this rounding bound for `nearestEven` and checks the two-code difference at the excluded endpoint $\lvert a-b\rvert=1$.
 
-The interval-certificate lemmas are generic order arguments and take monotonicity as an explicit hypothesis. They do not derive a numerical enclosure or certify floating-point evaluation of its endpoint codes.
+The generic interval-certificate lemmas take monotonicity as a hypothesis. The project also proves `nearestEven` monotone, lifts monotonicity through positive-scale affine encoding and clipping, and instantiates the certificate with `nearestEvenAffine`. Only the enclosure and endpoint-code equalities remain hypotheses in that concrete result. These Lean proofs do not verify the Python enclosure generator or the C++ backend comparison; those are separately tested executable artifacts.
 
 The scope of the machine check follows the types: `ℝ` denotes exact real arithmetic, and `ℤ` denotes unbounded integers. Numerical error bounds enter the new theorems as hypotheses; the proofs do not derive them for a NumPy or device implementation. The formalization checks the two integer-rounding results in the FP32 example; the IEEE-754 addition that produces $0.5$ is demonstrated by the Python example and is not formalized here. Verifying a particular device kernel additionally requires a model of its arithmetic, overflow behavior, rounding order, and data access.
 
 ### Reproducing the check
 
-With the pinned Lean toolchain available, run these commands from the repository root. The cache command downloads the compiled dependencies needed by this project.
+With the pinned Lean toolchain, `uv`, `g++` and network access available, run these commands from the repository root. The cache command downloads the compiled dependencies needed by this project. Keep the committed `lake-manifest.json`; `lake update` is for an intentional dependency update, not part of this reproduction.
 
 ```sh
 cd tools/quantization-proof
-MATHLIB_NO_CACHE_ON_UPDATE=1 lake update
-lake exe cache get Mathlib.Data.Real.Archimedean Mathlib.Data.Rat.Floor \
+MATHLIB_NO_CACHE_ON_UPDATE=1 lake exe cache get Mathlib.Data.Real.Archimedean Mathlib.Data.Rat.Floor \
   Mathlib.Algebra.Order.Floor.Ring Mathlib.Algebra.BigOperators.Fin \
   Mathlib.Tactic.FieldSimp Mathlib.Tactic.Linarith \
   Mathlib.Tactic.NormNum Mathlib.Tactic.Ring
-lake build
-lake env lean QuantizationProof.lean
+cd ../..
+uv run --no-project --python 3.10 --with numpy==1.26.4 \
+  python tools/quantization-proof/verify.py --backend
 ```
 
-The final command also prints the axiom dependencies of the main theorems. The abstract `correct_iff_fake` theorem and the two generic interval-certificate lemmas depend on no axioms. The reported concrete arithmetic proofs use Lean's standard `propext`, `Classical.choice`, and `Quot.sound`; none reports `sorryAx`. This checks the stated mathematical implications for all inputs satisfying their hypotheses. Checking a deployed kernel still requires evidence that its actual computation implements the formal specification.
+The verifier runs `lake build` and directly rechecks the proof source with warnings treated as errors, then audits the axiom dependencies of the main theorems. The abstract `correct_iff_fake` theorem and the two generic interval-certificate lemmas depend on no axioms. The reported concrete arithmetic proofs use Lean's standard `propext`, `Classical.choice`, and `Quot.sound`; none reports `sorryAx`. This checks the stated mathematical implications for all inputs satisfying their hypotheses. Checking a deployed kernel still requires evidence that its actual computation implements the formal specification.
 
 [pytorch-qmatmul]: https://github.com/pytorch/pytorch/blob/v2.5.1/test/quantization/core/test_quantized_op.py#L1180-L1189
 [pytorch-convolution]: https://github.com/pytorch/pytorch/blob/v2.5.1/test/quantization/core/test_quantized_op.py#L5100-L5117
